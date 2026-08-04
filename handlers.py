@@ -10,8 +10,17 @@ def register_handlers():
 
     @bot.message_handler(commands=["start"])
     def start(message):
-        create_user(message.from_user.id)
-        bot.send_message(message.chat.id, f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", reply_markup=main_menu())
+        user_id = message.from_user.id
+        create_user(user_id)
+        bot_username = bot.get_me().username
+        refer_link = f"https://t.me/{bot_username}?start=ref{user_id}"
+
+        # main_menu te Refer button add korlam
+        markup = main_menu()
+        markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
+
+        text = f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI\n\n📌 Refer & Earn: 0.50 BDT per referral"
+        bot.send_message(message.chat.id, text, reply_markup=markup)
 
     @bot.message_handler(commands=["admin"])
     def admin(message):
@@ -25,6 +34,8 @@ def register_handlers():
         msg_id = call.message.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
+        bot_username = bot.get_me().username
+        refer_link = f"https://t.me/{bot_username}?start=ref{user_id}"
 
         if call.data == "shop":
             try:
@@ -41,8 +52,22 @@ def register_handlers():
         elif call.data == "hotmail_list":
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
 
+        # NOTUN: Refer & Earn
+        elif call.data == "refer":
+            text = f"""📌 *Refer & Earn*
+
+💰 Get *0.50 BDT* for each successful referral.
+
+🔗 *Your Link:*
+`{refer_link}`
+
+👥 *Invite friends.*
+💵 *Earn instantly.*"""
+            markup = main_menu()
+            markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
+            bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=markup, parse_mode="Markdown")
+
         elif call.data.startswith("buy_"):
-            # IMPORTANT FIX: dan dik theke 2 bar split korbo
             parts = call.data.rsplit("_", 2)
             category = parts[0].replace("buy_", "")
             name = parts[1].replace("_", " ")
@@ -52,7 +77,9 @@ def register_handlers():
             if balance >= price:
                 update_balance(user_id, -price)
                 add_order(user_id, name, price)
-                bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nPrice: {price} BDT\nNew Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                markup = main_menu()
+                markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
+                bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nPrice: {price} BDT\nNew Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=markup)
                 bot.send_message(ADMIN_ID, f"🛒 New Order\nUser: {user_id}\nProduct: {name}\nPrice: {price} BDT")
             else:
                 bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
@@ -72,11 +99,15 @@ def register_handlers():
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
 
         elif call.data == "wallet":
-            bot.edit_message_text(f"👛 Wallet\n💰 Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            markup = main_menu()
+            markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
+            bot.edit_message_text(f"👛 Wallet\n💰 Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=markup)
         elif call.data == "orders":
             orders = get_orders(user_id)
             text = "📦 My Orders\nNo orders yet" if not orders else "📦 My Orders\n"+"\n".join([f"• {x[0]} - {x[1]} BDT - {x[2]}" for x in orders])
-            bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            markup = main_menu()
+            markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
+            bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=markup)
 
         elif call.data == "admin_add_balance":
             if user_id!= ADMIN_ID: return
@@ -108,14 +139,16 @@ def register_handlers():
 
         elif call.data == "support":
             support_text = (
-                "🆘 Support Center\n\n"
+                "🆘 Support Center\n"
                 "কোনো সমস্যা বা প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।\n\n"
                 "💬 Support: @PolasChandra\n"
                 "WhatsApp: 01873565112\n"
                 "⏰ Available: 24/7\n"
                 "⚡ Fast Response • Trusted Support"
             )
-            bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            markup = main_menu()
+            markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
+            bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=markup)
         elif call.data == "about":
             about_text = (
                 "ℹ️ About Proxy Store\n"
@@ -136,10 +169,14 @@ def register_handlers():
                 "❤️ ধন্যবাদ Proxy Store-এর সাথে থাকার জন্য।\n"
                 "🤖 Powered by Proxy Store"
             )
-            bot.edit_message_text(about_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            markup = main_menu()
+            markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
+            bot.edit_message_text(about_text, chat_id=chat_id, message_id=msg_id, reply_markup=markup)
         elif call.data == "home":
             try:
-                bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                markup = main_menu()
+                markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
+                bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=markup)
             except: pass
 
         bot.answer_callback_query(call.id)
