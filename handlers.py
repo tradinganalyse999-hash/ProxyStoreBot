@@ -3,23 +3,43 @@ from states import user_state
 from config import ADMIN_ID, SUPPORT_USERNAME, BOT_NAME
 from buttons import main_menu, shop_menu, deposit_menu, product_menu
 from admin import admin_buttons
-from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c
+from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c, conn
 from bot import bot
+import re
+
+REFERRAL_BONUS = 0.50 # 1 refer e koto diba
 
 def register_handlers():
 
     @bot.message_handler(commands=["start"])
     def start(message):
         user_id = message.from_user.id
-        create_user(user_id)
+        args = message.text.split()
+        referred_by = None
+
+        # Refer check: /start ref12345
+        if len(args) > 1 and args[1].startswith("ref"):
+            try:
+                referred_by = int(args[1].replace("ref", ""))
+            except: pass
+
+        create_user(user_id, referred_by) # referred_by pathay dilam
+
+        # Jodi notun user hoy ebong refer hoy
+        if referred_by and referred_by!= user_id:
+            # refer kora user ke bonus dao
+            update_balance(referred_by, REFERRAL_BONUS)
+            c.execute("UPDATE users SET referral_count = referral_count + 1, total_referral_earning = total_referral_earning +? WHERE user_id =?", (REFERRAL_BONUS, referred_by))
+            conn.commit()
+            try:
+                bot.send_message(referred_by, f"🎉 Congratulations!\n\n1 New Referral Joined!\nYou got {REFERRAL_BONUS} BDT bonus.\nNew Balance: {get_balance(referred_by)} BDT")
+            except: pass
+
         bot_username = bot.get_me().username
         refer_link = f"https://t.me/{bot_username}?start=ref{user_id}"
-
-        # main_menu te Refer button add korlam
         markup = main_menu()
         markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
-
-        text = f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI\n\n📌 Refer & Earn: 0.50 BDT per referral"
+        text = f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI\n📌 Refer & Earn: {REFERRAL_BONUS} BDT per referral"
         bot.send_message(message.chat.id, text, reply_markup=markup)
 
     @bot.message_handler(commands=["admin"])
@@ -52,11 +72,20 @@ def register_handlers():
         elif call.data == "hotmail_list":
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
 
-        # NOTUN: Refer & Earn
+        # NOTUN: Refer & Earn with Count
         elif call.data == "refer":
+            c.execute("SELECT referral_count, total_referral_earning FROM users WHERE user_id =?", (user_id,))
+            data = c.fetchone()
+            ref_count = data[0] if data else 0
+            ref_earn = data[1] if data else 0.0
+
             text = f"""📌 *Refer & Earn*
 
-💰 Get *0.50 BDT* for each successful referral.
+💰 Get *{REFERRAL_BONUS} BDT* for each successful referral.
+
+📊 *Your Stats:*
+👥 Total Referrals: *{ref_count}*
+💵 Total Earned: *{ref_earn} BDT*
 
 🔗 *Your Link:*
 `{refer_link}`
@@ -69,10 +98,8 @@ def register_handlers():
 
         elif call.data.startswith("buy_"):
             parts = call.data.rsplit("_", 2)
-            category = parts[0].replace("buy_", "")
             name = parts[1].replace("_", " ")
             price = float(parts[2])
-
             balance = get_balance(user_id)
             if balance >= price:
                 update_balance(user_id, -price)
@@ -138,37 +165,12 @@ def register_handlers():
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
 
         elif call.data == "support":
-            support_text = (
-                "🆘 Support Center\n"
-                "কোনো সমস্যা বা প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।\n\n"
-                "💬 Support: @PolasChandra\n"
-                "WhatsApp: 01873565112\n"
-                "⏰ Available: 24/7\n"
-                "⚡ Fast Response • Trusted Support"
-            )
+            support_text = "🆘 Support Center\n💬 Support: @PolasChandra\nWhatsApp: 01873565112\n⏰ Available: 24/7"
             markup = main_menu()
             markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
             bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=markup)
         elif call.data == "about":
-            about_text = (
-                "ℹ️ About Proxy Store\n"
-                "🚀 Welcome to Proxy Store\n"
-                "আপনার বিশ্বস্ত ডিজিটাল সার্ভিস পার্টনার।\n\n"
-                "Proxy Store প্রদান করে দ্রুত, নিরাপদ এবং নির্ভরযোগ্য Premium Digital Services। "
-                "আমাদের লক্ষ্য হলো গ্রাহকদের জন্য সেরা মানের সার্ভিস ও সহজ অভিজ্ঞতা নিশ্চিত করা।\n\n"
-                "📦 Our Services:\n"
-                "🔹 Premium VPN Account\n"
-                "🔹 High-Speed Proxy\n"
-                "🔹 Digital Premium Services\n"
-                "✨ Why Choose Us?\n"
-                "✅ Instant Delivery System\n"
-                "✅ Affordable & Competitive Price\n"
-                "✅ Secure & Reliable Service\n"
-                "✅ 24/7 Customer Support\n"
-                "🔐 আপনার নিরাপত্তা ও সন্তুষ্টিই আমাদের সর্বোচ্চ অগ্রাধিকার।\n\n"
-                "❤️ ধন্যবাদ Proxy Store-এর সাথে থাকার জন্য।\n"
-                "🤖 Powered by Proxy Store"
-            )
+            about_text = "ℹ️ About Proxy Store\n🚀 Welcome to Proxy Store\nPremium Digital Services Provider"
             markup = main_menu()
             markup.add(InlineKeyboardButton("🚀 Refer & Earn", callback_data="refer"))
             bot.edit_message_text(about_text, chat_id=chat_id, message_id=msg_id, reply_markup=markup)
