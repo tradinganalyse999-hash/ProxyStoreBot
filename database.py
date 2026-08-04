@@ -3,15 +3,20 @@ import sqlite3
 conn = sqlite3.connect("proxystore.db", check_same_thread=False)
 c = conn.cursor()
 
-# Tables
+# Tables - Refer er jonno 3 ta column add kora hoise
 c.execute('''CREATE TABLE IF NOT EXISTS users
-             (user_id INTEGER PRIMARY KEY, balance INTEGER DEFAULT 0)''')
+             (user_id INTEGER PRIMARY KEY,
+              balance REAL DEFAULT 0,
+              referred_by INTEGER DEFAULT NULL,
+              referral_count INTEGER DEFAULT 0,
+              total_referral_earning REAL DEFAULT 0)''')
+
 c.execute('''CREATE TABLE IF NOT EXISTS orders
-             (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, product TEXT, price INTEGER, status TEXT)''')
+             (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, product TEXT, price REAL, status TEXT)''')
 conn.commit()
 
-def create_user(user_id):
-    c.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (user_id,))
+def create_user(user_id, referred_by=None):
+    c.execute("INSERT OR IGNORE INTO users (user_id, referred_by) VALUES (?,?)", (user_id, referred_by))
     conn.commit()
 
 def get_balance(user_id):
