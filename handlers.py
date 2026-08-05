@@ -32,8 +32,7 @@ def register_handlers():
         bot_username = bot.get_me().username
         refer_link = f"https://t.me/{bot_username}?start=ref{user_id}"
         markup = main_menu()
-        markup.add(InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer"))
-        text = f"🤖 {BOT_NAME}\nProxyStore AI তে স্বাগতম ❤️\n📌 রেফার বোনাস: {REFERRAL_BONUS} BDT\n\nশর্ত: আপনার রেফার করা ইউজার ১০ টাকা ডিপোজিট করলে বোনাস পাবেন"
+        text = f"🤖 {BOT_NAME}\nProxyStore AI তে স্বাগতম ❤️\n📌 রেফার বোনাস: {REFERRAL_BONUS} BDT\nশর্ত: আপনার রেফার করা ইউজার ১০ টাকা ডিপোজিট করলে বোনাস পাবেন"
         bot.send_message(message.chat.id, text, reply_markup=markup)
 
     @bot.message_handler(commands=["admin"])
@@ -45,7 +44,7 @@ def register_handlers():
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        msg_id = call.message_id
+        msg_id = call.message.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
         bot_username = bot.get_me().username
@@ -80,19 +79,19 @@ def register_handlers():
 
 *শর্ত: রেফার করা ইউজারকে ১০ টাকা ডিপোজিট করতে হবে*"""
             markup = main_menu()
-            markup.add(InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer"))
             bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=markup, parse_mode="Markdown")
 
         elif call.data.startswith("buy_"):
-            parts = call.data.rsplit("_", 2)
-            name = parts[1].replace("_", " ")
-            price = float(parts[2])
+            parts = call.data.split("_")
+            category = parts[1]
+            price = float(parts[-1]) # last er ta price
+            name = " ".join(parts[2:-1]).replace("_", " ") # majher sob name
+
             balance = get_balance(user_id)
             if balance >= price:
                 update_balance(user_id, -price)
-                add_order(user_id, name, price)
+                add_order(user_id, f"{category.upper()}: {name}", price)
                 markup = main_menu()
-                markup.add(InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer"))
                 bot.edit_message_text(f"✅ অর্ডার কনফার্ম!\n\nপ্রোডাক্ট: {name}\nদাম: {price} BDT\nনতুন ব্যালেন্স: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=markup)
                 bot.send_message(ADMIN_ID, f"🛒 New Order\nUser: {user_id}\nProduct: {name}\nPrice: {price} BDT")
             else:
@@ -114,13 +113,11 @@ def register_handlers():
 
         elif call.data == "wallet":
             markup = main_menu()
-            markup.add(InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer"))
             bot.edit_message_text(f"👛 ওয়ালেট\n💰 ব্যালেন্স: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=markup)
         elif call.data == "orders":
             orders = get_orders(user_id)
             text = "📦 আমার অর্ডার\nকোন অর্ডার নেই" if not orders else "📦 আমার অর্ডার\n"+"\n".join([f"• {x[0]} - {x[1]} BDT - {x[2]}" for x in orders])
             markup = main_menu()
-            markup.add(InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer"))
             bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=markup)
 
         elif call.data == "admin_add_balance":
@@ -154,17 +151,14 @@ def register_handlers():
         elif call.data == "support":
             support_text = "🆘 সাপোর্ট সেন্টার\n💬 সাপোর্ট: @PolasChandra\nWhatsApp: 01873565112\n⏰ ২৪/৭ এভেইলেবল"
             markup = main_menu()
-            markup.add(InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer"))
             bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=markup)
         elif call.data == "about":
             about_text = "ℹ️ Proxy Store সম্পর্কে\n🚀 প্রিমিয়াম ডিজিটাল সার্ভিস এর বিশ্বস্ত প্রতিষ্ঠান"
             markup = main_menu()
-            markup.add(InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer"))
             bot.edit_message_text(about_text, chat_id=chat_id, message_id=msg_id, reply_markup=markup)
         elif call.data == "home":
             try:
                 markup = main_menu()
-                markup.add(InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer"))
                 bot.edit_message_text(f"🤖 {BOT_NAME}\nProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=markup)
             except: pass
 
@@ -194,14 +188,18 @@ def register_handlers():
             bot.send_message(message.chat.id, f"✅ Order {order_id} Approved and code sent to user")
             del user_state[user_id]
         elif state["step"] == "amount":
-            state["amount"] = float(message.text) # float kore nilam
+            try:
+                state["amount"] = float(message.text)
+            except:
+                bot.send_message(message.chat.id, "❌ ভুল Amount. শুধু নাম্বার দিন")
+                return
             state["step"] = "trx"
             bot.send_message(message.chat.id, "🧾 Transaction ID দিন")
         elif state["step"] == "trx":
             amount = state["amount"]
             bot.send_message(ADMIN_ID,f"💰 নতুন ডিপোজিট রিকোয়েস্ট\n👤 {message.from_user.first_name}\n🆔 {user_id}\nAmount: {amount} BDT\nTRX ID: {message.text}")
 
-            # EKHANEI MAIN KAJ: 10 tk ba tar beshi hole bonus active
+            # 10 tk ba tar beshi hole bonus active
             if amount >= MIN_DEPOSIT_FOR_BONUS:
                 referrer = activate_referral_bonus(user_id)
                 if referrer:
