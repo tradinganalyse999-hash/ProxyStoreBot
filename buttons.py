@@ -17,10 +17,10 @@ PRICE_LIST = {
         "Gmail 1pc": 30
     },
     "outlook": {
-        "OUTLOOK 1PIS": 0.60 # <-- Name change
+        "OUTLOOK 1PIS": 0.60
     },
     "hotmail": {
-        "HOTMAIL 1 PIS": 0.60 # <-- Name change
+        "HOTMAIL 1 PIS": 0.60
     }
 }
 # ================================================
@@ -38,6 +38,9 @@ def main_menu():
     markup.add(
         InlineKeyboardButton("🆘 Support", callback_data="support"),
         InlineKeyboardButton("ℹ️ About", callback_data="about")
+    )
+    markup.add( # Eita add korlam
+        InlineKeyboardButton("🚀 রেফার & আর্ন", callback_data="refer")
     )
     return markup
 
@@ -61,7 +64,6 @@ def product_menu(category):
     markup = InlineKeyboardMarkup(row_width=1)
     products = PRICE_LIST.get(category, {})
     for name, price in products.items():
-        # Space ke _ kore dicchi callback er jonno
         safe_name = name.replace(" ", "_")
         callback = f"buy_{category}_{safe_name}_{price}"
         markup.add(InlineKeyboardButton(f"{name} - {price} BDT", callback_data=callback))
