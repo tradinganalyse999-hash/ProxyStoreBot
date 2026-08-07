@@ -22,7 +22,7 @@ def register_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        msg_id = call.message_id
+        msg_id = call.message.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
 
