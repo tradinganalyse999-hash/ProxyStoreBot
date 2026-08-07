@@ -3,7 +3,7 @@ from states import user_state
 from config import ADMIN_ID, SUPPORT_USERNAME, BOT_NAME
 from buttons import main_menu, shop_menu, deposit_menu, product_menu, quantity_menu
 from admin import admin_buttons
-from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c
+from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c, get_all_users
 from bot import bot
 
 def register_handlers(bot):
