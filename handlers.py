@@ -21,7 +21,6 @@ def register_handlers():
             except: pass
         create_user(user_id, referred_by)
         if referred_by and referred_by!= user_id: add_referral(referred_by, user_id)
-        bot_username = bot.get_me().username
         markup = main_menu()
         text = f"🤖 {BOT_NAME}\nProxyStore AI তে স্বাগতম ❤️\n📌 রেফার বোনাস: {REFERRAL_BONUS} BDT\nশর্ত: আপনার রেফার করা ইউজার ১০ টাকা ডিপোজিট করলে বোনাস পাবেন"
         bot.send_message(message.chat.id, text, reply_markup=markup)
@@ -35,7 +34,7 @@ def register_handlers():
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        msg_id = call.message_id # THIK KORA HOISE
+        msg_id = call.message_id # EI LINE TA 100% THIK
         chat_id = call.message.chat.id
         user_id = call.from_user.id
 
