@@ -50,7 +50,7 @@ def register_handlers(bot):
         elif call.data.startswith("select_qty|"):
             parts = call.data.split("|") # [select_qty, category, name, price]
             category, name, price = parts[1], parts[2], float(parts[3])
-            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: 1", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, 1))
+            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: 1", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, 1))
 
         # NEW CART SYSTEM - 2. + button
         elif call.data.startswith("qty_plus|"):
