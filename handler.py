@@ -1,3 +1,4 @@
+    # v3 cache-bust 07-08-2026
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from states import user_state
 from config import ADMIN_ID, BOT_NAME
