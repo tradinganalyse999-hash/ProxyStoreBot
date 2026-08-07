@@ -24,8 +24,9 @@ def shop_menu():
 def product_menu(category):
     markup = InlineKeyboardMarkup(row_width=1)
     products = {
-        "vpn": [("Nord VPN 1 Month", 25.00)],
-        "proxy": [("Residential Proxy 1GB", 20.00),("Owl Proxy 200MB", 10.00)],
+        "vpn": [("Nord VPN 1 Month", 25.00),("Hma Vpn 7 Days", 30.00),("Proton Vpn 14 Day", 50.00),("Nord VPN 1 Month", 25.00),("Surfshark 7 Days", 25.00),("Hotspot Shield 7 Days", 25.00),("
+Cyber Ghost Vpn 3 Day", 20.00),("Avast 7 Days", 25.00),("Vpn - Viper 3 Days", 25.00),("Ip Vanish 7 Days", 25.00),("Pia 7 Days", 25.00),("Pure 7 Days", 25.00),("Potato 7 Days", 25.00),("Sky 7 Days", 25.00),("Turbo 7 Days", 25.00)],
+        "proxy": [("Owl Proxy 200MB", 10.00)],
         "gmail": [("Gmail ", 50.00)],
         "outlook": [("Outlook.com", 0.80)],
         "hotmail": [("Hotmail.com", 0.80)]
