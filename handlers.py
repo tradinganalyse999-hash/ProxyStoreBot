@@ -34,7 +34,9 @@ def register_handlers():
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        msg_id = call.message_id # EI LINE TA 100% THIK
+        # EI 3 TA LINE SOB CHEYE IMPORTANT
+        if not call.message: return # jodi msg na thake tahole return
+        msg_id = call.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
 
