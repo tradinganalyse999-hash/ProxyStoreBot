@@ -19,7 +19,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS referrals
               referred_id INTEGER UNIQUE,
               status TEXT DEFAULT 'pending')''')
 
-# EI TABLE TA NOTUN ADD KORSI DEPOSIT ER JONNO
 c.execute('''CREATE TABLE IF NOT EXISTS deposits
              (id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INTEGER,
@@ -46,6 +45,7 @@ def add_order(user_id, product, price):
     c.execute("INSERT INTO orders (user_id, product, price, status) VALUES (?,?,?,?)",
               (user_id, product, price, "Pending"))
     conn.commit()
+    return c.lastrowid # <-- EI LINE TA ADD KORSI
 
 def get_orders(user_id):
     c.execute("SELECT product, price, status FROM orders WHERE user_id=? ORDER BY id DESC", (user_id,))
@@ -80,7 +80,6 @@ def get_refer_stats(user_id):
     data = c.fetchone()
     return data if data else (0, 0.0)
 
-# EI 2 TA FUNCTION NOTUN
 def add_deposit_request(user_id, amount, trx_id):
     c.execute("INSERT INTO deposits (user_id, amount, trx_id) VALUES (?,?,?)", (user_id, amount, trx_id))
     conn.commit()
