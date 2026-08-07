@@ -7,7 +7,7 @@ from database import create_user, get_balance, update_balance, add_order, get_or
 REFERRAL_BONUS = 0.50
 MIN_DEPOSIT_FOR_BONUS = 10
 
-def register_handlers():
+def register_handlers(bot):
     @bot.message_handler(commands=["start"])
     def start(message):
         user_id = message.from_user.id
