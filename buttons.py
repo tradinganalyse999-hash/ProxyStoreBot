@@ -31,24 +31,22 @@ def product_menu(category):
         "hotmail": [("Hotmail Aged", 7.00)]
     }
     for name, price in products.get(category, []):
-        safe_name = name.replace(" ", "_")
-        # CHANGED: qty_ theke select_qty_ korlam handler er sathe match korar jonno
-        markup.add(InlineKeyboardButton(f"🛒 {name} - 💎 {price} BDT", callback_data=f"select_qty_{category}_{safe_name}_{price}"))
+        # IMPORTANT: | diye alada korsi jate name e space/_ thakleo problem na hoy
+        markup.add(InlineKeyboardButton(f"🛒 {name} - 💎 {price} BDT", callback_data=f"select_qty|{category}|{name}|{price}"))
     markup.add(InlineKeyboardButton("⬅️ Back", callback_data="shop"))
     return markup
 
-def quantity_menu(category, safe_name, price, qty):
-    name = safe_name.replace("_", " ")
+def quantity_menu(category, name, price, qty):
     total = price * qty
     markup = InlineKeyboardMarkup(row_width=3)
     markup.add(
-        InlineKeyboardButton("➖", callback_data=f"qty_minus_{category}_{safe_name}_{price}_{qty}"),
-        InlineKeyboardButton(f"{qty}", callback_data="none"),
-        InlineKeyboardButton("➕", callback_data=f"qty_plus_{category}_{safe_name}_{price}_{qty}")
+        InlineKeyboardButton("➖", callback_data=f"qty_minus|{category}|{name}|{price}|{qty}"),
+        InlineKeyboardButton(f"{qty}", callback_data="noop"),
+        InlineKeyboardButton("➕", callback_data=f"qty_plus|{category}|{name}|{price}|{qty}")
     )
-    markup.add(InlineKeyboardButton("📝 Custom Quantity", callback_data=f"custom_qty_{category}_{safe_name}_{price}"))
+    markup.add(InlineKeyboardButton("📝 Custom Quantity", callback_data=f"custom_qty|{category}|{name}|{price}"))
     markup.add(
-        InlineKeyboardButton(f"✅ কনফার্ম {total:.2f} BDT", callback_data=f"buy_{category}_{safe_name}_{price}_{qty}"),
+        InlineKeyboardButton(f"✅ কনফার্ম {total:.2f} BDT", callback_data=f"buy|{category}|{name}|{price}|{qty}"),
         InlineKeyboardButton("❌ Cancel", callback_data=f"{category}_list")
     )
     return markup
