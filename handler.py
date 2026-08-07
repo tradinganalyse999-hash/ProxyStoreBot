@@ -6,7 +6,7 @@ from admin import admin_buttons
 from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c
 from bot import bot
 
-def register_handlers():
+def register_handlers(bot):
 
     @bot.message_handler(commands=["start"])
     def start(message):
