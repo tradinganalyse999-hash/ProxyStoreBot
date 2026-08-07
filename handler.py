@@ -22,7 +22,7 @@ def register_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        msg_id = call.message.message_id # ✅ 100% thik
+        msg_id = call.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
 
@@ -46,39 +46,30 @@ def register_handlers(bot):
         elif call.data == "noop":
             bot.answer_callback_query(call.id, "Quantity change korte + - use koro")
 
-        # NEW CART SYSTEM - 1. Product select korle quantity menu ashbe
+        # NEW CART SYSTEM
         elif call.data.startswith("select_qty|"):
-            parts = call.data.split("|") # [select_qty, category, name, price]
+            parts = call.data.split("|")
             category, name, price = parts[1], parts[2], float(parts[3])
             bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: 1", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, 1))
-
-        # NEW CART SYSTEM - 2. + button
         elif call.data.startswith("qty_plus|"):
             parts = call.data.split("|")
             category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             qty += 1
-            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
-
-        # NEW CART SYSTEM - 3. - button
+            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
         elif call.data.startswith("qty_minus|"):
             parts = call.data.split("|")
             category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             if qty > 1: qty -= 1
-            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
-
-        # NEW CART SYSTEM - 4. Custom Quantity
+            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
         elif call.data.startswith("custom_qty|"):
             parts = call.data.split("|")
             category, name, price = parts[1], parts[2], float(parts[3])
             user_state[user_id] = {"step": "custom_qty", "category": category, "name": name, "price": price}
             bot.send_message(chat_id, "📝 Koyta niba? Number likhe pathao")
-
-        # NEW CART SYSTEM - 5. Final Buy
         elif call.data.startswith("buy|"):
             parts = call.data.split("|")
             category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             total_price = price * qty
-
             balance = get_balance(user_id)
             if balance >= total_price:
                 update_balance(user_id, -total_price)
@@ -87,6 +78,12 @@ def register_handlers(bot):
                 bot.send_message(ADMIN_ID, f"🛒 New Order\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT")
             else:
                 bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+
+        # BROADCAST SYSTEM
+        elif call.data == "admin_broadcast":
+            if user_id!= ADMIN_ID: return
+            bot.send_message(chat_id, "📢 Broadcast message likhe pathao. Sob user pabe.")
+            user_state[user_id] = {"step": "broadcast_msg"}
 
         # Deposit
         elif call.data == "deposit":
@@ -114,7 +111,6 @@ def register_handlers(bot):
             success_msg = f"""╔════════╗\n ✅ ডিপোজিট সফল!\n╚════════╝\n\n💰 যোগ হয়েছে: +{amount:.2f} টাকা\n💳 ব্যালেন্স: {new_balance:.2f} টাকা\n🎉 আপনার ওয়ালেট সফলভাবে আপডেট হয়েছে।\n\n🚀 এখনই Shop থেকে আপনার পছন্দের সার্ভিস কিনুন।\n\n❤️ Proxy Store"""
             bot.send_message(target_user, success_msg)
             bot.edit_message_text(f"✅ Confirmed. {amount} BDT added to {target_user}", chat_id=chat_id, message_id=msg_id)
-
         elif call.data.startswith("cancel_"):
             if user_id!= ADMIN_ID: return
             target_user = int(call.data.split("_")[1])
@@ -150,7 +146,6 @@ def register_handlers(bot):
                 markup = InlineKeyboardMarkup()
                 markup.add(InlineKeyboardButton("✅ Approve", callback_data=f"approve_{o[0]}"))
                 bot.send_message(chat_id, f"🛒 Order ID: {o[0]}\nUser: {o[1]}\nProduct: {o[2]}\nPrice: {o[3]} BDT", reply_markup=markup)
-
         elif call.data.startswith("approve_"):
             if user_id!= ADMIN_ID: return
             order_id = int(call.data.split("_")[1])
@@ -185,12 +180,25 @@ def register_handlers(bot):
             bot.send_message(message.chat.id, f"✅ {target_id} ke {amount} BDT add kora hoise\nNew Balance: {get_balance(target_id)} BDT")
             bot.send_message(target_id, f"🎉 Admin apnar account e {amount} BDT add korse")
             del user_state[user_id]
+        # NEW BROADCAST
+        elif state["step"] == "broadcast_msg":
+            message_text = message.text
+            all_users = get_all_users()
+            sent = 0
+            for uid in all_users:
+                try:
+                    bot.send_message(uid, f"📢 *Notice from {BOT_NAME}*\n\n{message_text}", parse_mode="Markdown")
+                    sent += 1
+                except:
+                    pass
+            bot.send_message(message.chat.id, f"✅ Broadcast Done!\n{sent} jon user ke pathano hoise")
+            del user_state[user_id]
         elif state["step"] == "admin_code":
             order_id = state["order_id"]
             code = message.text
             order = get_order_by_id(order_id)
             update_order_status(order_id, "Approved")
-            bot.send_message(order[1], f"✅ Your Order Approved!\n\nProduct: {order[2]}\nCode: `{code}`\nEnjoy!", parse_mode="Markdown")
+            bot.send_message(order[1], f"✅ Your Order Approved!\n\nProduct: {order[2]}\nCode: {code}\nEnjoy!", parse_mode="Markdown")
             bot.send_message(message.chat.id, f"✅ Order {order_id} Approved and code sent to user")
             del user_state[user_id]
         elif state["step"] == "amount":
@@ -208,7 +216,6 @@ def register_handlers(bot):
             bot.send_message(ADMIN_ID,f"💰 New Deposit Request\n👤 {message.from_user.first_name}\n🆔 {user_id}\nAmount: {amount} BDT\nTRX ID: {trx}", reply_markup=markup)
             bot.send_message(message.chat.id,"✅ Deposit Request Sent. Admin will approve in 5-10 min.")
             del user_state[user_id]
-        # NEW: Custom Quantity input
         elif state["step"] == "custom_qty":
             try:
                 qty = int(message.text)
@@ -216,7 +223,7 @@ def register_handlers(bot):
                 category = state["category"]
                 name = state["name"]
                 price = state["price"]
-                bot.send_message(message.chat.id, f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", reply_markup=quantity_menu(category, name, price, qty))
+                bot.send_message(message.chat.id, f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: {qty}", reply_markup=quantity_menu(category, name, price, qty))
                 del user_state[user_id]
             except:
                 bot.send_message(message.chat.id, "❌ Sothik number dao")
