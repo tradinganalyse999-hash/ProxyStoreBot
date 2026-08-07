@@ -1,7 +1,7 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from states import user_state
 from config import ADMIN_ID, SUPPORT_USERNAME, BOT_NAME
-from buttons import main_menu, shop_menu, deposit_menu, product_menu
+from buttons import main_menu, shop_menu, deposit_menu, product_menu, quantity_menu
 from admin import admin_buttons
 from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c
 from bot import bot
@@ -22,7 +22,7 @@ def register_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        msg_id = call.message.message_id
+        msg_id = call.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
 
@@ -30,6 +30,8 @@ def register_handlers(bot):
             try:
                 bot.edit_message_text("🛒 Select Category", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
             except: pass
+
+        # Category list
         elif call.data == "vpn_list":
             bot.edit_message_text("🌐 VPN Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("vpn"))
         elif call.data == "proxy_list":
@@ -41,21 +43,57 @@ def register_handlers(bot):
         elif call.data == "hotmail_list":
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
 
+        # NEW CART SYSTEM - 1. Product select korle quantity menu ashbe
+        elif call.data.startswith("select_qty_"):
+            parts = call.data.split("_", 4)
+            category = parts[2]
+            safe_name = parts[3]
+            price = float(parts[4])
+            bot.edit_message_text(f"🛒 {safe_name.replace('_', ' ')}\n💎 Price: {price} BDT\nStock: 4\nQuantity: 1", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, safe_name, price, 1))
+
+        # NEW CART SYSTEM - 2. + button
+        elif call.data.startswith("qty_plus_"):
+            parts = call.data.split("_", 5)
+            category, safe_name, price, qty = parts[2], parts[3], float(parts[4]), int(parts[5])
+            qty += 1
+            name = safe_name.replace("_", " ")
+            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, safe_name, price, qty))
+
+        # NEW CART SYSTEM - 3. - button
+        elif call.data.startswith("qty_minus_"):
+            parts = call.data.split("_", 5)
+            category, safe_name, price, qty = parts[2], parts[3], float(parts[4]), int(parts[5])
+            if qty > 1: qty -= 1
+            name = safe_name.replace("_", " ")
+            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, safe_name, price, qty))
+
+        # NEW CART SYSTEM - 4. Custom Quantity
+        elif call.data.startswith("custom_qty_"):
+            parts = call.data.split("_", 4)
+            category, safe_name, price = parts[2], parts[3], float(parts[4])
+            user_state[user_id] = {"step": "custom_qty", "category": category, "safe_name": safe_name, "price": price}
+            bot.send_message(chat_id, "📝 Koyta niba? Number likhe pathao")
+
+        # NEW CART SYSTEM - 5. Final Buy
         elif call.data.startswith("buy_"):
-            parts = call.data.rsplit("_", 2)
-            category = parts[0].replace("buy_", "")
-            name = parts[1].replace("_", " ")
-            price = float(parts[2])
+            parts = call.data.split("_", 4)
+            category = parts[1]
+            safe_name = parts[2]
+            name = safe_name.replace("_", " ")
+            price = float(parts[3])
+            qty = int(parts[4])
+            total_price = price * qty
 
             balance = get_balance(user_id)
-            if balance >= price:
-                update_balance(user_id, -price)
-                add_order(user_id, name, price)
-                bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nPrice: {price} BDT\nNew Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
-                bot.send_message(ADMIN_ID, f"🛒 New Order\nUser: {user_id}\nProduct: {name}\nPrice: {price} BDT")
+            if balance >= total_price:
+                update_balance(user_id, -total_price)
+                add_order(user_id, f"{name} x{qty}", total_price)
+                bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\nNew Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                bot.send_message(ADMIN_ID, f"🛒 New Order\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT")
             else:
-                bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+                bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
 
+        # Deposit
         elif call.data == "deposit":
             bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
         elif call.data == "bkash":
@@ -70,7 +108,7 @@ def register_handlers(bot):
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
 
-        # NEW: Admin Confirm / Cancel button logic
+        # Admin Confirm / Cancel
         elif call.data.startswith("confirm_"):
             if user_id!= ADMIN_ID: return
             parts = call.data.split("_")
@@ -78,34 +116,14 @@ def register_handlers(bot):
             amount = float(parts[2])
             update_balance(target_user, amount)
             new_balance = get_balance(target_user)
-
-            success_msg = f"""╔════════╗
-   ✅ ডিপোজিট সফল!
-╚════════╝
-
-💰 যোগ হয়েছে: +{amount:.2f} টাকা
-💳 ব্যালেন্স: {new_balance:.2f} টাকা
-
-🎉 আপনার ওয়ালেট সফলভাবে আপডেট হয়েছে।
-
-🚀 এখনই Shop থেকে আপনার পছন্দের সার্ভিস কিনুন।
-
-❤️ Proxy Store"""
+            success_msg = f"""╔════════╗\n ✅ ডিপোজিট সফল!\n╚════════╝\n\n💰 যোগ হয়েছে: +{amount:.2f} টাকা\n💳 ব্যালেন্স: {new_balance:.2f} টাকা\n\n🎉 আপনার ওয়ালেট সফলভাবে আপডেট হয়েছে।\n\n🚀 এখনই Shop থেকে আপনার পছন্দের সার্ভিস কিনুন।\n\n❤️ Proxy Store"""
             bot.send_message(target_user, success_msg)
             bot.edit_message_text(f"✅ Confirmed. {amount} BDT added to {target_user}", chat_id=chat_id, message_id=msg_id)
 
         elif call.data.startswith("cancel_"):
             if user_id!= ADMIN_ID: return
             target_user = int(call.data.split("_")[1])
-
-            fail_msg = """⚠️ Payment Verification Failed
-
-আপনার জমা দেওয়া পেমেন্ট প্রমাণটি বৈধ নয়।
-
-🔒 নিরাপত্তার স্বার্থে Fake Deposit বা ভুয়া Screenshot গ্রহণ করা হয় না।
-
-অনুগ্রহ করে সঠিক পেমেন্ট তথ্য জমা দিন।
-বার Fake Deposit করার চেষ্টা করলে আপনার অ্যাকাউন্ট স্থায়ীভাবে ব্লক করা হবে।"""
+            fail_msg = """⚠️ Payment Verification Failed\n\nআপনার জমা দেওয়া পেমেন্ট প্রমাণটি বৈধ নয়।\n\n🔒 নিরাপত্তার স্বার্থে Fake Deposit বা ভুয়া Screenshot গ্রহণ করা হয় না।\n\nঅনুগ্রহ করে সঠিক পেমেন্ট তথ্য জমা দিন।\nবার Fake Deposit করার চেষ্টা করলে আপনার অ্যাকাউন্ট স্থায়ীভাবে ব্লক করা হবে।"""
             bot.send_message(target_user, fail_msg)
             bot.edit_message_text("❌ Cancelled by Admin", chat_id=chat_id, message_id=msg_id)
 
@@ -145,35 +163,10 @@ def register_handlers(bot):
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
 
         elif call.data == "support":
-            support_text = (
-                "🆘 Support Center\n"
-                "কোনো সমস্যা বা প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।\n\n"
-                "💬 Support: @PolasChandra\n"
-                "WhatsApp: 01873565112\n"
-                "⏰ Available: 24/7\n"
-                "⚡ Fast Response • Trusted Support"
-            )
+            support_text = "🆘 Support Center\nকোনো সমস্যা বা প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।\n\n💬 Support: @PolasChandra\nWhatsApp: 01873565112\n⏰ Available: 24/7\n⚡ Fast Response • Trusted Support"
             bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
         elif call.data == "about":
-            about_text = (
-                "ℹ️ About Proxy Store\n"
-                "🚀 Welcome to Proxy Store\n"
-                "আপনার বিশ্বস্ত ডিজিটাল সার্ভিস পার্টনার।\n\n"
-                "Proxy Store প্রদান করে দ্রুত, নিরাপদ এবং নির্ভরযোগ্য Premium Digital Services। "
-                "আমাদের লক্ষ্য হলো গ্রাহকদের জন্য সেরা মানের সার্ভিস ও সহজ অভিজ্ঞতা নিশ্চিত করা।\n\n"
-                "📦 Our Services:\n"
-                "🔹 Premium VPN Account\n"
-                "🔹 High-Speed Proxy\n"
-                "🔹 Digital Premium Services\n"
-                "✨ Why Choose Us?\n"
-                "✅ Instant Delivery System\n"
-                "✅ Affordable & Competitive Price\n"
-                "✅ Secure & Reliable Service\n"
-                "✅ 24/7 Customer Support\n"
-                "🔐 আপনার নিরাপত্তা ও সন্তুষ্টিই আমাদের সর্বোচ্চ অগ্রাধিকার।\n\n"
-                "❤️ ধন্যবাদ Proxy Store-এর সাথে থাকার জন্য।\n"
-                "🤖 Powered by Proxy Store"
-            )
+            about_text = "ℹ️ About Proxy Store\n🚀 Welcome to Proxy Store\nআপনার বিশ্বস্ত ডিজিটাল সার্ভিস পার্টনার।\n\nProxy Store প্রদান করে দ্রুত, নিরাপদ এবং নির্ভরযোগ্য Premium Digital Services।"
             bot.edit_message_text(about_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
         elif call.data == "home":
             try:
@@ -212,8 +205,6 @@ def register_handlers(bot):
         elif state["step"] == "trx":
             amount = state['amount']
             trx = message.text
-
-            # NEW: Admin ke button soho pathano
             markup = InlineKeyboardMarkup()
             markup.add(
                 InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{user_id}_{amount}"),
@@ -222,3 +213,16 @@ def register_handlers(bot):
             bot.send_message(ADMIN_ID,f"💰 New Deposit Request\n👤 {message.from_user.first_name}\n🆔 {user_id}\nAmount: {amount} BDT\nTRX ID: {trx}", reply_markup=markup)
             bot.send_message(message.chat.id,"✅ Deposit Request Sent. Admin will approve in 5-10 min.")
             del user_state[user_id]
+        # NEW: Custom Quantity input
+        elif state["step"] == "custom_qty":
+            try:
+                qty = int(message.text)
+                if qty < 1: qty = 1
+                category = state["category"]
+                safe_name = state["safe_name"]
+                price = state["price"]
+                name = safe_name.replace("_", " ")
+                bot.send_message(message.chat.id, f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", reply_markup=quantity_menu(category, safe_name, price, qty))
+                del user_state[user_id]
+            except:
+                bot.send_message(message.chat.id, "❌ Sothik number dao")
