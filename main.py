@@ -1,5 +1,5 @@
 from bot import bot
-from handlers import register_handlers
+from handler import register_handler
 
 register_handlers()
 
