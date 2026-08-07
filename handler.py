@@ -22,7 +22,7 @@ def register_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        msg_id = call.message.message_id
+        msg_id = call.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
 
@@ -43,45 +43,40 @@ def register_handlers(bot):
         elif call.data == "hotmail_list":
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
 
+        elif call.data == "noop":
+            bot.answer_callback_query(call.id, "Quantity change korte + - use koro")
+
         # NEW CART SYSTEM - 1. Product select korle quantity menu ashbe
-        elif call.data.startswith("select_qty_"):
-            parts = call.data.split("_", 4)
-            category = parts[2]
-            safe_name = parts[3]
-            price = float(parts[4])
-            bot.edit_message_text(f"🛒 {safe_name.replace('_', ' ')}\n💎 Price: {price} BDT\nStock: 4\nQuantity: 1", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, safe_name, price, 1))
+        elif call.data.startswith("select_qty|"):
+            parts = call.data.split("|") # [select_qty, category, name, price]
+            category, name, price = parts[1], parts[2], float(parts[3])
+            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: 1", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, 1))
 
         # NEW CART SYSTEM - 2. + button
-        elif call.data.startswith("qty_plus_"):
-            parts = call.data.split("_", 5)
-            category, safe_name, price, qty = parts[2], parts[3], float(parts[4]), int(parts[5])
+        elif call.data.startswith("qty_plus|"):
+            parts = call.data.split("|")
+            category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             qty += 1
-            name = safe_name.replace("_", " ")
-            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, safe_name, price, qty))
+            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
 
         # NEW CART SYSTEM - 3. - button
-        elif call.data.startswith("qty_minus_"):
-            parts = call.data.split("_", 5)
-            category, safe_name, price, qty = parts[2], parts[3], float(parts[4]), int(parts[5])
+        elif call.data.startswith("qty_minus|"):
+            parts = call.data.split("|")
+            category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             if qty > 1: qty -= 1
-            name = safe_name.replace("_", " ")
-            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, safe_name, price, qty))
+            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
 
         # NEW CART SYSTEM - 4. Custom Quantity
-        elif call.data.startswith("custom_qty_"):
-            parts = call.data.split("_", 4)
-            category, safe_name, price = parts[2], parts[3], float(parts[4])
-            user_state[user_id] = {"step": "custom_qty", "category": category, "safe_name": safe_name, "price": price}
+        elif call.data.startswith("custom_qty|"):
+            parts = call.data.split("|")
+            category, name, price = parts[1], parts[2], float(parts[3])
+            user_state[user_id] = {"step": "custom_qty", "category": category, "name": name, "price": price}
             bot.send_message(chat_id, "📝 Koyta niba? Number likhe pathao")
 
         # NEW CART SYSTEM - 5. Final Buy
-        elif call.data.startswith("buy_"):
-            parts = call.data.split("_", 4)
-            category = parts[1]
-            safe_name = parts[2]
-            name = safe_name.replace("_", " ")
-            price = float(parts[3])
-            qty = int(parts[4])
+        elif call.data.startswith("buy|"):
+            parts = call.data.split("|")
+            category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             total_price = price * qty
 
             balance = get_balance(user_id)
@@ -116,7 +111,7 @@ def register_handlers(bot):
             amount = float(parts[2])
             update_balance(target_user, amount)
             new_balance = get_balance(target_user)
-            success_msg = f"""╔════════╗\n ✅ ডিপোজিট সফল!\n╚════════╝\n\n💰 যোগ হয়েছে: +{amount:.2f} টাকা\n💳 ব্যালেন্স: {new_balance:.2f} টাকা\n\n🎉 আপনার ওয়ালেট সফলভাবে আপডেট হয়েছে।\n\n🚀 এখনই Shop থেকে আপনার পছন্দের সার্ভিস কিনুন।\n\n❤️ Proxy Store"""
+            success_msg = f"""╔════════╗\n ✅ ডিপোজিট সফল!\n╚════════╝\n\n💰 যোগ হয়েছে: +{amount:.2f} টাকা\n💳 ব্যালেন্স: {new_balance:.2f} টাকা\n🎉 আপনার ওয়ালেট সফলভাবে আপডেট হয়েছে।\n\n🚀 এখনই Shop থেকে আপনার পছন্দের সার্ভিস কিনুন।\n\n❤️ Proxy Store"""
             bot.send_message(target_user, success_msg)
             bot.edit_message_text(f"✅ Confirmed. {amount} BDT added to {target_user}", chat_id=chat_id, message_id=msg_id)
 
@@ -219,10 +214,9 @@ def register_handlers(bot):
                 qty = int(message.text)
                 if qty < 1: qty = 1
                 category = state["category"]
-                safe_name = state["safe_name"]
+                name = state["name"]
                 price = state["price"]
-                name = safe_name.replace("_", " ")
-                bot.send_message(message.chat.id, f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", reply_markup=quantity_menu(category, safe_name, price, qty))
+                bot.send_message(message.chat.id, f"🛒 {name}\n💎 Price: {price} BDT\nStock: 4\nQuantity: {qty}", reply_markup=quantity_menu(category, name, price, qty))
                 del user_state[user_id]
             except:
                 bot.send_message(message.chat.id, "❌ Sothik number dao")
