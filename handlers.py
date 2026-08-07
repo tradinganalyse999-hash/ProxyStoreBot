@@ -35,16 +35,23 @@ def register_handlers():
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        msg_id = call.message_id
+        msg_id = call.message_id # THIK KORA HOISE
         chat_id = call.message.chat.id
         user_id = call.from_user.id
 
-        if call.data == "shop": bot.edit_message_text("🛒 ক্যাটাগরি সিলেক্ট করুন", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
-        elif call.data == "vpn_list": bot.edit_message_text("🌐 VPN প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("vpn"))
-        elif call.data == "proxy_list": bot.edit_message_text("🌍 Proxy প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("proxy"))
-        elif call.data == "gmail_list": bot.edit_message_text("📧 Gmail প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("gmail"))
-        elif call.data == "outlook_list": bot.edit_message_text("📮 Outlook প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("outlook"))
-        elif call.data == "hotmail_list": bot.edit_message_text("📬 Hotmail প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
+        if call.data == "shop":
+            bot.edit_message_text("🛒 ক্যাটাগরি সিলেক্ট করুন", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
+
+        elif call.data == "vpn_list":
+            bot.edit_message_text("🌐 VPN প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("vpn"))
+        elif call.data == "proxy_list":
+            bot.edit_message_text("🌍 Proxy প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("proxy"))
+        elif call.data == "gmail_list":
+            bot.edit_message_text("📧 Gmail প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("gmail"))
+        elif call.data == "outlook_list":
+            bot.edit_message_text("📮 Outlook প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("outlook"))
+        elif call.data == "hotmail_list":
+            bot.edit_message_text("📬 Hotmail প্রোডাক্ট", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
 
         # QUANTITY SYSTEM
         elif call.data.startswith("qty_"):
@@ -53,12 +60,14 @@ def register_handlers():
             total = price * qty
             text = f"🛒 *{name}*\n\n💎 প্রাইস: {price} BDT\nস্টক: 99+\n\nপরিমাণ: {qty}\nমোট: 💎 {total} BDT"
             bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty), parse_mode="Markdown")
+
         elif call.data.startswith("inc_"):
             _, category, name, price, qty = call.data.split("_")
             qty = int(qty) + 1; price = float(price)
             total = price * qty
             text = f"🛒 *{name}*\n\n💎 প্রাইস: {price} BDT\nস্টক: 99+\n\nপরিমাণ: {qty}\nমোট: 💎 {total} BDT"
             bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty), parse_mode="Markdown")
+
         elif call.data.startswith("dec_"):
             _, category, name, price, qty = call.data.split("_")
             qty = int(qty); price = float(price)
@@ -66,21 +75,22 @@ def register_handlers():
             total = price * qty
             text = f"🛒 *{name}*\n\n💎 প্রাইস: {price} BDT\nস্টক: 99+\n\nপরিমাণ: {qty}\nমোট: 💎 {total} BDT"
             bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty), parse_mode="Markdown")
+
         elif call.data.startswith("confirm_"):
             _, category, name, price, qty = call.data.split("_")
             price = float(price); qty = int(qty); total_price = price * qty
             balance = get_balance(user_id)
             if balance >= total_price:
-                # ORDER PENDING E PATHAY DIBO ADMIN ER KACHE
                 order_id = add_order(user_id, f"{category.upper()}: {name} x{qty}", total_price)
                 markup = InlineKeyboardMarkup(row_width=2)
                 markup.add(
                     InlineKeyboardButton("✅ Confirm", callback_data=f"admin_confirm_{order_id}"),
                     InlineKeyboardButton("❌ Cancel", callback_data=f"admin_cancel_{order_id}")
                 )
-                bot.send_message(ADMIN_ID, f"🛒 নতুন অর্ডার\n👤 User: {user_id}\n📦 Product: {name} x{qty}\n💰 Total: {total_price} BDT\n\nApprove করবেন?", reply_markup=markup)
+                bot.send_message(ADMIN_ID, f"🛒 নতুন অর্ডার\n👤 User: {user_id}\n📦 Product: {name} x{qty}\n💰 Total: {total_price} BDT\nApprove করবেন?", reply_markup=markup)
                 bot.edit_message_text(f"⏳ আপনার অর্ডারটি এডমিন এর কাছে পাঠানো হয়েছে। এপ্রুভ হলেই প্রোডাক্ট পাবেন।", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
-            else: bot.edit_message_text(f"❌ ব্যালেন্স নেই\nআপনার ব্যালেন্স: {balance} BDT\nপ্রয়োজন: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+            else:
+                bot.edit_message_text(f"❌ ব্যালেন্স নেই\nআপনার ব্যালেন্স: {balance} BDT\nপ্রয়োজন: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
 
         # ADMIN ORDER CONFIRM/CANCEL
         elif call.data.startswith("admin_confirm_"):
@@ -88,10 +98,11 @@ def register_handlers():
             order_id = int(call.data.split("_")[2])
             order = get_order_by_id(order_id)
             if order:
-                update_balance(order[1], -order[3]) # taka katbe ekhane
+                update_balance(order[1], -order[3])
                 update_order_status(order_id, "Approved")
                 bot.send_message(order[1], f"✅ আপনার অর্ডার এপ্রুভ হয়েছে!\n\nপ্রোডাক্ট: {order[2]}\nমোট: {order[3]} BDT\nধন্যবাদ!")
                 bot.edit_message_text(f"✅ Order Approved\nID: {order_id}\nUser: {order[1]}", chat_id=chat_id, message_id=msg_id)
+
         elif call.data.startswith("admin_cancel_"):
             if user_id!= ADMIN_ID: return
             order_id = int(call.data.split("_")[2])
@@ -112,18 +123,27 @@ def register_handlers():
             refer_link = f"https://t.me/{bot_username}?start=ref{user_id}"
             text = f"📌 *রেফার & আর্ন*\n💰 প্রতি সফল রেফারে পাবেন *{REFERRAL_BONUS} BDT*\n\n📊 *আপনার স্ট্যাটস:*\n👥 মোট রেফার: *{ref_count}*\n💵 মোট আয়: *{ref_earn} BDT*\n\n🔗 *আপনার লিংক:*\n`{refer_link}`"
             bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu(), parse_mode="Markdown")
-        elif call.data == "deposit": bot.edit_message_text("💰 ডিপোজিট করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+
+        elif call.data == "deposit":
+            bot.edit_message_text("💰 ডিপোজিট করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+
         elif call.data in ["bkash", "nagad", "rocket", "usdt"]:
             methods = {"bkash": "bKash: `01603940061`", "nagad": "Nagad: `01603940061`", "rocket": "Rocket: `01603940061`", "usdt": "USDT TRC20:\n`TGE8oPaj7cYP14xuoHTZT19KxwSf12FYoz`"}
             bot.edit_message_text(f"💳 {methods[call.data]}\n\n1. টাকা পাঠান\n2. এরপর 'পেমেন্ট সাবমিট' করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 ডিপোজিট এর পরিমাণ লিখুন")
-        elif call.data == "wallet": bot.edit_message_text(f"👛 ওয়ালেট\n💰 ব্যালেন্স: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+
+        elif call.data == "wallet":
+            bot.edit_message_text(f"👛 ওয়ালেট\n💰 ব্যালেন্স: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+
         elif call.data == "orders":
-            orders = get_orders(user_id); text = "📦 আমার অর্ডার\nকোন অর্ডার নেই" if not orders else "📦 আমার অর্ডার\n"+"\n".join([f"• {x[0]} - {x[1]} BDT - {x[2]}" for x in orders])
+            orders = get_orders(user_id)
+            text = "📦 আমার অর্ডার\nকোন অর্ডার নেই" if not orders else "📦 আমার অর্ডার\n"+"\n".join([f"• {x[0]} - {x[1]} BDT - {x[2]}" for x in orders])
             bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
 
+        # DEPOSIT APPROVE/REJECT
         elif call.data.startswith("approve_dep_"):
             if user_id!= ADMIN_ID: return
             deposit_id = int(call.data.split("_")[2])
@@ -145,9 +165,13 @@ def register_handlers():
                 bot.send_message(u_id, warning_msg, parse_mode="Markdown")
                 bot.edit_message_text(f"❌ Deposit Rejected\nUser: {u_id}\nAmount: {amount} BDT", chat_id=chat_id, message_id=msg_id)
 
-        elif call.data == "support": bot.edit_message_text("🆘 সাপোর্ট: @PolasChandra\nWhatsApp: 01873565112", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
-        elif call.data == "about": bot.edit_message_text("ℹ️ Proxy Store সম্পর্কে\n🚀 প্রিমিয়াম ডিজিটাল সার্ভিস", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
-        elif call.data == "home": bot.edit_message_text(f"🤖 {BOT_NAME}\nProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+        elif call.data == "support":
+            bot.edit_message_text("🆘 সাপোর্ট: @PolasChandra\nWhatsApp: 01873565112", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+        elif call.data == "about":
+            bot.edit_message_text("ℹ️ Proxy Store সম্পর্কে\n🚀 প্রিমিয়াম ডিজিটাল সার্ভিস", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+        elif call.data == "home":
+            bot.edit_message_text(f"🤖 {BOT_NAME}\nProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+
         bot.answer_callback_query(call.id)
 
     @bot.message_handler(func=lambda m: m.from_user.id in user_state)
