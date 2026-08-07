@@ -42,7 +42,6 @@ def register_handlers(bot):
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
 
         elif call.data.startswith("buy_"):
-            # IMPORTANT FIX: dan dik theke 2 bar split korbo
             parts = call.data.rsplit("_", 2)
             category = parts[0].replace("buy_", "")
             name = parts[1].replace("_", " ")
@@ -70,6 +69,45 @@ def register_handlers(bot):
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
+
+        # NEW: Admin Confirm / Cancel button logic
+        elif call.data.startswith("confirm_"):
+            if user_id!= ADMIN_ID: return
+            parts = call.data.split("_")
+            target_user = int(parts[1])
+            amount = float(parts[2])
+            update_balance(target_user, amount)
+            new_balance = get_balance(target_user)
+
+            success_msg = f"""╔════════╗
+   ✅ ডিপোজিট সফল!
+╚════════╝
+
+💰 যোগ হয়েছে: +{amount:.2f} টাকা
+💳 ব্যালেন্স: {new_balance:.2f} টাকা
+
+🎉 আপনার ওয়ালেট সফলভাবে আপডেট হয়েছে।
+
+🚀 এখনই Shop থেকে আপনার পছন্দের সার্ভিস কিনুন।
+
+❤️ Proxy Store"""
+            bot.send_message(target_user, success_msg)
+            bot.edit_message_text(f"✅ Confirmed. {amount} BDT added to {target_user}", chat_id=chat_id, message_id=msg_id)
+
+        elif call.data.startswith("cancel_"):
+            if user_id!= ADMIN_ID: return
+            target_user = int(call.data.split("_")[1])
+
+            fail_msg = """⚠️ Payment Verification Failed
+
+আপনার জমা দেওয়া পেমেন্ট প্রমাণটি বৈধ নয়।
+
+🔒 নিরাপত্তার স্বার্থে Fake Deposit বা ভুয়া Screenshot গ্রহণ করা হয় না।
+
+অনুগ্রহ করে সঠিক পেমেন্ট তথ্য জমা দিন।
+বার Fake Deposit করার চেষ্টা করলে আপনার অ্যাকাউন্ট স্থায়ীভাবে ব্লক করা হবে।"""
+            bot.send_message(target_user, fail_msg)
+            bot.edit_message_text("❌ Cancelled by Admin", chat_id=chat_id, message_id=msg_id)
 
         elif call.data == "wallet":
             bot.edit_message_text(f"👛 Wallet\n💰 Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
@@ -108,7 +146,7 @@ def register_handlers(bot):
 
         elif call.data == "support":
             support_text = (
-                "🆘 Support Center\n\n"
+                "🆘 Support Center\n"
                 "কোনো সমস্যা বা প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।\n\n"
                 "💬 Support: @PolasChandra\n"
                 "WhatsApp: 01873565112\n"
@@ -172,6 +210,15 @@ def register_handlers(bot):
             state["step"] = "trx"
             bot.send_message(message.chat.id, "🧾 Send Transaction ID / TrxID")
         elif state["step"] == "trx":
-            bot.send_message(ADMIN_ID,f"💰 New Deposit Request\n👤 {message.from_user.first_name}\n🆔 {user_id}\nAmount: {state['amount']} BDT\nTRX ID: {message.text}")
+            amount = state['amount']
+            trx = message.text
+
+            # NEW: Admin ke button soho pathano
+            markup = InlineKeyboardMarkup()
+            markup.add(
+                InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{user_id}_{amount}"),
+                InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{user_id}")
+            )
+            bot.send_message(ADMIN_ID,f"💰 New Deposit Request\n👤 {message.from_user.first_name}\n🆔 {user_id}\nAmount: {amount} BDT\nTRX ID: {trx}", reply_markup=markup)
             bot.send_message(message.chat.id,"✅ Deposit Request Sent. Admin will approve in 5-10 min.")
             del user_state[user_id]
