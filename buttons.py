@@ -31,21 +31,23 @@ def product_menu(category):
         "hotmail": [("Hotmail Aged", 7.00)]
     }
     for name, price in products.get(category, []):
-        markup.add(InlineKeyboardButton(f"🛒 {name} - 💎 {price} BDT", callback_data=f"qty_{category}_{name}_{price}"))
+        safe_name = name.replace(" ", "_") # SPACE KE _ KORE DILAM
+        markup.add(InlineKeyboardButton(f"🛒 {name} - 💎 {price} BDT", callback_data=f"qty_{category}_{safe_name}_{price}"))
     markup.add(InlineKeyboardButton("⬅️ Back", callback_data="shop"))
     return markup
 
 def quantity_menu(category, name, price, qty):
+    name = name.replace("_", " ") # ABAR SPACE BANAY DILAM DISPLAY ER JONNO
     total = price * qty
     markup = InlineKeyboardMarkup(row_width=3)
     markup.add(
-        InlineKeyboardButton("➖", callback_data=f"dec_{category}_{name}_{price}_{qty}"),
+        InlineKeyboardButton("➖", callback_data=f"dec_{category}_{name.replace(' ', '_')}_{price}_{qty}"),
         InlineKeyboardButton(f"{qty}", callback_data="none"),
-        InlineKeyboardButton("➕", callback_data=f"inc_{category}_{name}_{price}_{qty}")
+        InlineKeyboardButton("➕", callback_data=f"inc_{category}_{name.replace(' ', '_')}_{price}_{qty}")
     )
-    markup.add(InlineKeyboardButton("📝 Custom Quantity", callback_data=f"custom_{category}_{name}_{price}"))
+    markup.add(InlineKeyboardButton("📝 Custom Quantity", callback_data=f"custom_{category}_{name.replace(' ', '_')}_{price}"))
     markup.add(
-        InlineKeyboardButton(f"✅ কনফার্ম {total} BDT", callback_data=f"confirm_{category}_{name}_{price}_{qty}"),
+        InlineKeyboardButton(f"✅ কনফার্ম {total} BDT", callback_data=f"confirm_{category}_{name.replace(' ', '_')}_{price}_{qty}"),
         InlineKeyboardButton("❌ Cancel", callback_data=f"{category}_list")
     )
     return markup
