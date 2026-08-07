@@ -34,9 +34,10 @@ def register_handlers():
 
     @bot.callback_query_handler(func=lambda call: True)
     def callback(call):
-        # EI 3 TA LINE SOB CHEYE IMPORTANT
-        if not call.message: return # jodi msg na thake tahole return
-        msg_id = call.message_id
+        if not call.message:
+            bot.answer_callback_query(call.id)
+            return
+        msg_id = call.message_id # THIK KORSI
         chat_id = call.message.chat.id
         user_id = call.from_user.id
 
@@ -82,7 +83,7 @@ def register_handlers():
             price = float(price); qty = int(qty); total_price = price * qty
             balance = get_balance(user_id)
             if balance >= total_price:
-                order_id = add_order(user_id, f"{category.upper()}: {name} x{qty}", total_price)
+                order_id = add_order(user_id, f"{category.upper()}: {name} x{qty}", total_price) # ekhon order_id paba
                 markup = InlineKeyboardMarkup(row_width=2)
                 markup.add(
                     InlineKeyboardButton("✅ Confirm", callback_data=f"admin_confirm_{order_id}"),
