@@ -21,10 +21,10 @@ def register_handlers(bot):
         bot.send_message(message.chat.id, "👑 Admin Panel", reply_markup=admin_buttons())
 
     @bot.callback_query_handler(func=lambda call: True)
-    def callback(call):
-        msg_id = call.message_id  # 
-        chat_id = call.message.chat.id
-        user_id = call.from_user.id
+def callback(call):
+    msg_id = call.message_id
+    chat_id = call.message.chat.id
+    user_id = call.from_user.id
 
         if call.data == "shop":
             try:
