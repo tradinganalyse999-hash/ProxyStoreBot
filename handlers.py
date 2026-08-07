@@ -30,7 +30,7 @@ def register_handlers():
         try:
             if not call.message:
                 return
-            msg_id = call.message_id # ASOL FIX EITA
+            msg_id = call.message_id
             chat_id = call.message.chat.id
             user_id = call.from_user.id
 
