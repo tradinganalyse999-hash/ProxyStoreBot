@@ -4,8 +4,6 @@ from states import user_state
 from config import ADMIN_ID, BOT_NAME
 from buttons import main_menu, shop_menu, deposit_menu, product_menu, quantity_menu
 from database import create_user, get_balance, update_balance, add_order, get_orders, add_referral, activate_referral_bonus, get_refer_stats, add_deposit_request, approve_deposit
-from bot import bot
-
 REFERRAL_BONUS = 0.50
 MIN_DEPOSIT_FOR_BONUS = 10
 
