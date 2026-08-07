@@ -30,7 +30,7 @@ def register_handlers():
         try:
             if not call.message:
                 return
-            msg_id = call.message.id # <-- EKHANE THIK KORSI
+            msg_id = call.message.id
             chat_id = call.message.chat.id
             user_id = call.from_user.id
 
