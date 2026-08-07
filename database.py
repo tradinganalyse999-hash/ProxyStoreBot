@@ -45,7 +45,7 @@ def add_order(user_id, product, price):
     c.execute("INSERT INTO orders (user_id, product, price, status) VALUES (?,?,?,?)",
               (user_id, product, price, "Pending"))
     conn.commit()
-    return c.lastrowid # <-- EI LINE TA ADD KORSI
+    return c.lastrowid
 
 def get_orders(user_id):
     c.execute("SELECT product, price, status FROM orders WHERE user_id=? ORDER BY id DESC", (user_id,))
@@ -95,3 +95,8 @@ def approve_deposit(deposit_id):
         conn.commit()
         return user_id, amount
     return None, None
+
+def get_all_users(): # ✅ NEW FUNCTION
+    c.execute("SELECT user_id FROM users")
+    users = c.fetchall()
+    return [u[0] for u in users]
