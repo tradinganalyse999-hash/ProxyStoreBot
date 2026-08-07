@@ -24,11 +24,11 @@ def shop_menu():
 def product_menu(category):
     markup = InlineKeyboardMarkup(row_width=1)
     products = {
-        "vpn": [("Owl Proxy 200MB", 5.00), ("Nord VPN 1 Month", 150.00)],
-        "proxy": [("Residential Proxy 1GB", 20.00)],
-        "gmail": [("Gmail Old 2018", 10.00)],
-        "outlook": [("Outlook Fresh", 8.00)],
-        "hotmail": [("Hotmail Aged", 7.00)]
+        "vpn": [("Nord VPN 1 Month", 25.00)],
+        "proxy": [("Residential Proxy 1GB", 20.00),("Owl Proxy 200MB", 10.00)],
+        "gmail": [("Gmail ", 50.00)],
+        "outlook": [("Outlook.com", 0.80)],
+        "hotmail": [("Hotmail.com", 0.80)]
     }
     for name, price in products.get(category, []):
         # IMPORTANT: | diye alada korsi jate name e space/_ thakleo problem na hoy
