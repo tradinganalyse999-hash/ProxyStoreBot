@@ -21,10 +21,10 @@ def register_handlers(bot):
         bot.send_message(message.chat.id, "👑 Admin Panel", reply_markup=admin_buttons())
 
     @bot.callback_query_handler(func=lambda call: True)
-def callback(call):
-    msg_id = call.message_id
-    chat_id = call.message.chat.id
-    user_id = call.from_user.id
+    def callback(call):
+        msg_id = call.message.message_id # ✅ 100% thik
+        chat_id = call.message.chat.id
+        user_id = call.from_user.id
 
         if call.data == "shop":
             try:
@@ -118,7 +118,7 @@ def callback(call):
         elif call.data.startswith("cancel_"):
             if user_id!= ADMIN_ID: return
             target_user = int(call.data.split("_")[1])
-            fail_msg = """⚠️ Payment Verification Failed\n\nআপনার জমা দেওয়া পেমেন্ট প্রমাণটি বৈধ নয়।\n\n🔒 নিরাপত্তার স্বার্থে Fake Deposit বা ভুয়া Screenshot গ্রহণ করা হয় না।\n\nঅনুগ্রহ করে সঠিক পেমেন্ট তথ্য জমা দিন।\nবার Fake Deposit করার চেষ্টা করলে আপনার অ্যাকাউন্ট স্থায়ীভাবে ব্লক করা হবে।"""
+            fail_msg = """⚠️ Payment Verification Failed\nআপনার জমা দেওয়া পেমেন্ট প্রমাণটি বৈধ নয়।\n\n🔒 নিরাপত্তার স্বার্থে Fake Deposit বা ভুয়া Screenshot গ্রহণ করা হয় না।\n\nঅনুগ্রহ করে সঠিক পেমেন্ট তথ্য জমা দিন।\nবার Fake Deposit করার চেষ্টা করলে আপনার অ্যাকাউন্ট স্থায়ীভাবে ব্লক করা হবে।"""
             bot.send_message(target_user, fail_msg)
             bot.edit_message_text("❌ Cancelled by Admin", chat_id=chat_id, message_id=msg_id)
 
