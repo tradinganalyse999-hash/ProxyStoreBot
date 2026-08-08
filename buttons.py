@@ -8,7 +8,7 @@ def main_menu():
                InlineKeyboardButton("💰 Deposit", callback_data="deposit"))
     markup.add(InlineKeyboardButton("👥 Refer", callback_data="refer"),
                InlineKeyboardButton("🆘 Support", callback_data="support"))
-    markup.add(InlineKeyboardButton("ℹ️ About", callback_data="about"))
+    markup.add(InlineKeyboardButton("ℹ About", callback_data="about"))
     return markup
 
 def shop_menu():
@@ -18,6 +18,7 @@ def shop_menu():
     markup.add(InlineKeyboardButton("📧 Gmail", callback_data="gmail_list"))
     markup.add(InlineKeyboardButton("📮 Outlook", callback_data="outlook_list"))
     markup.add(InlineKeyboardButton("📬 Hotmail", callback_data="hotmail_list"))
+    markup.add(InlineKeyboardButton("🖥️ Morelogin 100 Minutes", callback_data="morelogin_list")) # NEW ADDED
     markup.add(InlineKeyboardButton("🏠 Home", callback_data="home"))
     return markup
 
@@ -35,11 +36,11 @@ def product_menu(category):
         "gmail": [("Gmail", 50.00)],
         "outlook": [("Outlook.com", 0.80)],
         "hotmail": [("Hotmail.com", 0.80)],
-        "Morelogin": [("Morelogin 100 Minutes", 0.80)]
+        "morelogin": [("Morelogin 100 Minutes", 150.00)] # FIXED: small letter + price thik korlam
     }
     for name, price in products.get(category, []):
         markup.add(InlineKeyboardButton(f"🛒 {name} - 💎 {price} BDT", callback_data=f"select_qty|{category}|{name}|{price}"))
-    markup.add(InlineKeyboardButton("⬅️ Back", callback_data="shop"))
+    markup.add(InlineKeyboardButton("⬅ Back", callback_data="shop"))
     return markup
 
 def quantity_menu(category, name, price, qty):
