@@ -41,7 +41,7 @@ def register_handlers(bot):
             bot.edit_message_text("📮 Outlook Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("outlook"))
         elif call.data == "hotmail_list":
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
-        elif call.data == "morelogin_list": # FIXED - age duplicate chilo
+        elif call.data == "morelogin_list":
             bot.edit_message_text("🖥️ Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("morelogin"))
 
         elif call.data == "noop":
@@ -66,24 +66,19 @@ def register_handlers(bot):
             category, name, price = parts[1], parts[2], float(parts[3])
             user_state[user_id] = {"step": "custom_qty", "category": category, "name": name, "price": price}
             bot.send_message(chat_id, "📝 Koyta niba? Number likhe pathao")
-
         elif call.data.startswith("buy|"):
             parts = call.data.split("|")
             category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             total_price = price * qty
             balance = get_balance(user_id)
-
             if balance >= total_price:
-                # Auto Delivery Check for Proxy & Morelogin
                 if category in ["proxy", "morelogin"]:
                     available = get_stock_count(category, name)
                     if available < qty:
                         bot.send_message(ADMIN_ID, f"⚠️ Stock sesh! {name} - {qty} pcs order asche but stock {available} pcs")
                         bot.edit_message_text(f"❌ Stock e nai. Admin ke janao. Stock: {available} pcs", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                         return
-
                 update_balance(user_id, -total_price)
-
                 if category in ["proxy", "morelogin"]:
                     codes = take_codes(category, name, qty)
                     code_list = "\n".join([f"`{co}`" for co in codes])
@@ -98,7 +93,6 @@ def register_handlers(bot):
             else:
                 bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
 
-        # Admin handlers
         elif call.data == "admin_add_stock":
             if user_id!= ADMIN_ID: return
             bot.send_message(chat_id, "📦.txt file pathao\nFormat: prottek line e 1 ta code")
@@ -133,7 +127,6 @@ def register_handlers(bot):
             order_id = int(call.data.split("_")[1])
             bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}")
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
-
         elif call.data == "deposit":
             bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
         elif call.data == "bkash":
@@ -162,7 +155,6 @@ def register_handlers(bot):
             target_user = int(call.data.split("_")[1])
             bot.send_message(target_user, "⚠ Payment Verification Failed")
             bot.edit_message_text("❌ Cancelled by Admin", chat_id=chat_id, message_id=msg_id)
-
         elif call.data == "wallet":
             bot.edit_message_text(f"👛 Wallet\n💰 Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
         elif call.data == "orders":
@@ -179,33 +171,53 @@ def register_handlers(bot):
             try:
                 bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
             except: pass
-
         bot.answer_callback_query(call.id)
 
-    @bot.message_handler(func=lambda m: m.from_user.id in user_state)
+    @bot.message_handler(func=lambda m: m.from_user.id in user_state, content_types=['text', 'document'])
     def process_all(message):
         user_id = message.from_user.id
         state = user_state.get(user_id)
         if not state: return
 
         if state["step"] == "wait_txt_file":
-            if message.document and message.document.file_name.endswith(".txt"):
-                file_info = bot.get_file(message.document.file_id)
-                downloaded_file = bot.download_file(file_info.file_path)
-                codes = downloaded_file.decode("utf-8").splitlines()
-                state["codes"] = codes
-                state["step"] = "stock_category"
-                bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\nEkhon Category bolo: proxy / morelogin")
+            if message.content_type == 'document' and message.document:
+                try:
+                    file_name = message.document.file_name
+                    if not file_name.lower().endswith(".txt"):
+                        bot.send_message(message.chat.id, "❌ Sudhu.txt file pathao")
+                        return
+                    file_info = bot.get_file(message.document.file_id)
+                    downloaded_file = bot.download_file(file_info.file_path)
+                    codes = downloaded_file.decode("utf-8", errors="ignore").splitlines()
+                    codes = [c.strip() for c in codes if c.strip()!= ""]
+                    if not codes:
+                        bot.send_message(message.chat.id, "❌ File ta faka!")
+                        return
+                    state["codes"] = codes
+                    state["step"] = "stock_category"
+                    bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\n\nEkhon Category bolo:\n`proxy` / `morelogin`", parse_mode="Markdown")
+                except Exception as e:
+                    bot.send_message(message.chat.id, f"❌ Error: {e}")
             else:
-                bot.send_message(message.chat.id, "❌ Sudhu.txt file pathao")
+                bot.send_message(message.chat.id, "❌ Age.txt file ta upload koro, text na. Pin icon e click kore Document hisebe pathao.")
+
         elif state["step"] == "stock_category":
-            state["category"] = message.text.lower().strip()
+            cat = message.text.lower().strip()
+            if cat not in ["proxy", "morelogin"]:
+                bot.send_message(message.chat.id, "❌ Vul category. `proxy` ba `morelogin` likho", parse_mode="Markdown")
+                return
+            state["category"] = cat
             state["step"] = "stock_product"
-            bot.send_message(message.chat.id, "Product er name ki? Ex: Morelogin 100 Minutes")
+            if cat == "proxy":
+                bot.send_message(message.chat.id, "Product er name ki? Likhba:\n`Owl Proxy 200MB`", parse_mode="Markdown")
+            else:
+                bot.send_message(message.chat.id, "Product er name ki? Likhba:\n`Morelogin 100 Minutes`", parse_mode="Markdown")
+
         elif state["step"] == "stock_product":
             add_stock(state["category"], message.text.strip(), state["codes"])
-            bot.send_message(message.chat.id, f"✅ Stock Add Complete!\nCategory: {state['category']}\nProduct: {message.text}\nTotal: {len(state['codes'])} pcs")
+            bot.send_message(message.chat.id, f"✅ Stock Add Complete!\n\nCategory: {state['category']}\nProduct: {message.text.strip()}\nTotal: {len(state['codes'])} pcs")
             del user_state[user_id]
+
         elif state["step"] == "admin_user_id":
             state["target_id"] = int(message.text)
             state["step"] = "admin_amount"
