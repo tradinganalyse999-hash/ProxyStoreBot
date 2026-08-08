@@ -5,6 +5,7 @@ from buttons import main_menu, shop_menu, deposit_menu, product_menu, quantity_m
 from admin import admin_buttons
 from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c, get_all_users, get_stock_count, take_codes, add_stock
 from bot import bot
+import io
 
 def register_handlers(bot):
 
@@ -30,7 +31,6 @@ def register_handlers(bot):
             try:
                 bot.edit_message_text("🛒 Select Category", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
             except: pass
-
         elif call.data == "vpn_list":
             bot.edit_message_text("🌐 VPN Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("vpn"))
         elif call.data == "proxy_list":
@@ -43,10 +43,8 @@ def register_handlers(bot):
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
         elif call.data == "morelogin_list":
             bot.edit_message_text("🖥️ Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("morelogin"))
-
         elif call.data == "noop":
             bot.answer_callback_query(call.id, "Quantity change korte + - use koro")
-
         elif call.data.startswith("select_qty|"):
             parts = call.data.split("|")
             category, name, price = parts[1], parts[2], float(parts[3])
@@ -92,10 +90,9 @@ def register_handlers(bot):
                     bot.send_message(ADMIN_ID, f"🛒 New Manual Order\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT")
             else:
                 bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
-
         elif call.data == "admin_add_stock":
             if user_id!= ADMIN_ID: return
-            bot.send_message(chat_id, "📦.txt file pathao\nFormat: prottek line e 1 ta code")
+            bot.send_message(chat_id, "📦 File pathao\n.txt ba.xlsx\nFormat: prottek line/row e 1 ta code")
             user_state[user_id] = {"step": "wait_txt_file"}
         elif call.data == "admin_broadcast":
             if user_id!= ADMIN_ID: return
@@ -182,24 +179,40 @@ def register_handlers(bot):
         if state["step"] == "wait_txt_file":
             if message.content_type == 'document' and message.document:
                 try:
-                    file_name = message.document.file_name
-                    if not file_name.lower().endswith(".txt"):
-                        bot.send_message(message.chat.id, "❌ Sudhu.txt file pathao")
-                        return
+                    file_name = message.document.file_name.lower()
+                    codes = []
+
                     file_info = bot.get_file(message.document.file_id)
                     downloaded_file = bot.download_file(file_info.file_path)
-                    codes = downloaded_file.decode("utf-8", errors="ignore").splitlines()
-                    codes = [c.strip() for c in codes if c.strip()!= ""]
+
+                    if file_name.endswith(".txt"):
+                        codes = downloaded_file.decode("utf-8", errors="ignore").splitlines()
+                        codes = [c.strip() for c in codes if c.strip()!= ""]
+
+                    elif file_name.endswith(".xlsx"):
+                        import openpyxl
+                        wb = openpyxl.load_workbook(io.BytesIO(downloaded_file))
+                        ws = wb.active
+                        for row in ws.iter_rows(values_only=True):
+                            if row and row[0]:
+                                codes.append(str(row[0]).strip())
+
+                    else:
+                        bot.send_message(message.chat.id, "❌ Sudhu.txt ba.xlsx file pathao")
+                        return
+
                     if not codes:
                         bot.send_message(message.chat.id, "❌ File ta faka!")
                         return
+
                     state["codes"] = codes
                     state["step"] = "stock_category"
                     bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\n\nEkhon Category bolo:\n`proxy` / `morelogin`", parse_mode="Markdown")
+
                 except Exception as e:
                     bot.send_message(message.chat.id, f"❌ Error: {e}")
             else:
-                bot.send_message(message.chat.id, "❌ Age.txt file ta upload koro, text na. Pin icon e click kore Document hisebe pathao.")
+                bot.send_message(message.chat.id, "❌ Age.txt /.xlsx file ta upload koro")
 
         elif state["step"] == "stock_category":
             cat = message.text.lower().strip()
