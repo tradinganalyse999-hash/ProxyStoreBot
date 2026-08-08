@@ -25,6 +25,14 @@ c.execute('''CREATE TABLE IF NOT EXISTS deposits
               amount REAL,
               trx_id TEXT,
               status TEXT DEFAULT 'pending')''')
+
+# Stock for Auto Delivery (Proxy + Morelogin)
+c.execute('''CREATE TABLE IF NOT EXISTS stock
+             (id INTEGER PRIMARY KEY AUTOINCREMENT,
+              category TEXT,
+              product_name TEXT,
+              code TEXT,
+              status TEXT DEFAULT 'available')''')
 conn.commit()
 
 def create_user(user_id, referred_by=None):
@@ -96,7 +104,28 @@ def approve_deposit(deposit_id):
         return user_id, amount
     return None, None
 
-def get_all_users(): # ✅ NEW FUNCTION
+def get_all_users():
     c.execute("SELECT user_id FROM users")
     users = c.fetchall()
     return [u[0] for u in users]
+
+# --- AUTO STOCK FUNCTIONS ---
+def add_stock(category, product_name, codes_list):
+    for code in codes_list:
+        if code.strip():
+            c.execute("INSERT INTO stock (category, product_name, code) VALUES (?,?,?)", (category, product_name, code.strip()))
+    conn.commit()
+
+def get_stock_count(category, product_name):
+    c.execute("SELECT COUNT(*) FROM stock WHERE category=? AND product_name=? AND status='available'", (category, product_name))
+    return c.fetchone()[0]
+
+def take_codes(category, product_name, qty):
+    c.execute("SELECT id, code FROM stock WHERE category=? AND product_name=? AND status='available' LIMIT?", (category, product_name, qty))
+    rows = c.fetchall()
+    codes_to_deliver = []
+    for row in rows:
+        c.execute("UPDATE stock SET status='used' WHERE id=?", (row[0],))
+        codes_to_deliver.append(row[1])
+    conn.commit()
+    return codes_to_deliver
