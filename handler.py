@@ -42,6 +42,8 @@ def register_handlers(bot):
             bot.edit_message_text("📮 Outlook Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("outlook"))
         elif call.data == "hotmail_list":
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
+        elif call.data == "hotmail_list":
+            bot.edit_message_text("Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("Morelogin"))
 
         elif call.data == "noop":
             bot.answer_callback_query(call.id, "Quantity change korte + - use koro")
