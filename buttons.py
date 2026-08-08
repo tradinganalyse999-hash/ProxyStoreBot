@@ -34,7 +34,8 @@ def product_menu(category):
         "proxy": [("Owl Proxy 200MB", 10.00)],
         "gmail": [("Gmail", 50.00)],
         "outlook": [("Outlook.com", 0.80)],
-        "hotmail": [("Hotmail.com", 0.80)]
+        "hotmail": [("Hotmail.com", 0.80)],
+        "Morelogin": [("Morelogin 100 Minutes", 0.80)]
     }
     for name, price in products.get(category, []):
         markup.add(InlineKeyboardButton(f"🛒 {name} - 💎 {price} BDT", callback_data=f"select_qty|{category}|{name}|{price}"))
