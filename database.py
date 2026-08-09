@@ -26,7 +26,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS deposits
               trx_id TEXT,
               status TEXT DEFAULT 'pending')''')
 
-# Stock for Auto Delivery (Proxy + Morelogin)
 c.execute('''CREATE TABLE IF NOT EXISTS stock
              (id INTEGER PRIMARY KEY AUTOINCREMENT,
               category TEXT,
@@ -51,7 +50,7 @@ def update_balance(user_id, amount):
 
 def add_order(user_id, product, price):
     c.execute("INSERT INTO orders (user_id, product, price, status) VALUES (?,?,?,?)",
-              (user_id, product, price, "Pending"))
+              (user_id, product, price, "Approved"))
     conn.commit()
     return c.lastrowid
 
@@ -88,28 +87,11 @@ def get_refer_stats(user_id):
     data = c.fetchone()
     return data if data else (0, 0.0)
 
-def add_deposit_request(user_id, amount, trx_id):
-    c.execute("INSERT INTO deposits (user_id, amount, trx_id) VALUES (?,?,?)", (user_id, amount, trx_id))
-    conn.commit()
-    return c.lastrowid
-
-def approve_deposit(deposit_id):
-    c.execute("SELECT user_id, amount FROM deposits WHERE id=? AND status='pending'", (deposit_id,))
-    res = c.fetchone()
-    if res:
-        user_id, amount = res
-        update_balance(user_id, amount)
-        c.execute("UPDATE deposits SET status='approved' WHERE id=?", (deposit_id,))
-        conn.commit()
-        return user_id, amount
-    return None, None
-
 def get_all_users():
     c.execute("SELECT user_id FROM users")
     users = c.fetchall()
     return [u[0] for u in users]
 
-# --- AUTO STOCK FUNCTIONS ---
 def add_stock(category, product_name, codes_list):
     for code in codes_list:
         if code.strip():
