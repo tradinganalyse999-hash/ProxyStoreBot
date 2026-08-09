@@ -28,8 +28,7 @@ def register_handlers(bot):
         user_id = call.from_user.id
 
         if call.data == "shop":
-            try:
-                bot.edit_message_text("🛒 Select Category", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
+            try: bot.edit_message_text("🛒 Select Category", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
             except: pass
         elif call.data == "vpn_list":
             bot.edit_message_text("🌐 VPN Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("vpn"))
@@ -79,11 +78,24 @@ def register_handlers(bot):
                 update_balance(user_id, -total_price)
                 if category in ["proxy", "morelogin"]:
                     codes = take_codes(category, name, qty)
-                    code_list = "\n".join([f"`{co}`" for co in codes])
+                    # SHEET BANANO - Product name + Pis soho
+                    import openpyxl
+                    wb = openpyxl.Workbook()
+                    ws = wb.active
+                    ws.title = "Delivery"
+                    ws.append(["Product Name", "No", "Account Details"])
+                    ws.column_dimensions['A'].width = 30
+                    ws.column_dimensions['B'].width = 10
+                    ws.column_dimensions['C'].width = 90
+                    for i, code in enumerate(codes, 1):
+                        ws.append([name, i, code])
+                    file_stream = io.BytesIO()
+                    wb.save(file_stream)
+                    file_stream.seek(0)
+                    file_stream.name = f"{name.replace(' ','_')}_{qty}pcs.xlsx"
                     add_order(user_id, f"{name} x{qty}", total_price)
-                    delivery_msg = f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\n🔑 Your Codes:\n{code_list}\n\nProblem hole {SUPPORT_USERNAME}"
-                    bot.send_message(user_id, delivery_msg, parse_mode="Markdown")
-                    bot.edit_message_text(f"✅ Order Complete! Code upore diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                    bot.send_document(user_id, file_stream, caption=f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nProblem hole {SUPPORT_USERNAME}")
+                    bot.edit_message_text(f"✅ Order Complete! File upore diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                 else:
                     add_order(user_id, f"{name} x{qty}", total_price)
                     bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nAdmin 5-10 min er moddhe code diye dibe", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
@@ -181,14 +193,11 @@ def register_handlers(bot):
                 try:
                     file_name = message.document.file_name.lower()
                     codes = []
-
                     file_info = bot.get_file(message.document.file_id)
                     downloaded_file = bot.download_file(file_info.file_path)
-
                     if file_name.endswith(".txt"):
                         codes = downloaded_file.decode("utf-8", errors="ignore").splitlines()
                         codes = [c.strip() for c in codes if c.strip()!= ""]
-
                     elif file_name.endswith(".xlsx"):
                         import openpyxl
                         wb = openpyxl.load_workbook(io.BytesIO(downloaded_file))
@@ -196,19 +205,15 @@ def register_handlers(bot):
                         for row in ws.iter_rows(values_only=True):
                             if row and row[0]:
                                 codes.append(str(row[0]).strip())
-
                     else:
                         bot.send_message(message.chat.id, "❌ Sudhu.txt ba.xlsx file pathao")
                         return
-
                     if not codes:
                         bot.send_message(message.chat.id, "❌ File ta faka!")
                         return
-
                     state["codes"] = codes
                     state["step"] = "stock_category"
                     bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\n\nEkhon Category bolo:\n`proxy` / `morelogin`", parse_mode="Markdown")
-
                 except Exception as e:
                     bot.send_message(message.chat.id, f"❌ Error: {e}")
             else:
