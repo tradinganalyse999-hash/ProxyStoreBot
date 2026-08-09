@@ -32,11 +32,11 @@ def product_menu(category):
             ("Pia 7 Days", 25.00), ("Pure 7 Days", 25.00), ("Potato 7 Days", 25.00), 
             ("Sky 7 Days", 25.00), ("Turbo 7 Days", 25.00)
         ],
-        "proxy": [("Owl Proxy 200MB", 10.00)],
+        "proxy": [("Owl Proxy 200MB", 5)],
         "gmail": [("Gmail", 50.00)],
         "outlook": [("Outlook.com", 0.80)],
         "hotmail": [("Hotmail.com", 0.80)],
-        "morelogin": [("Morelogin 100 Minutes", 150.00)] # FIXED: small letter + price thik korlam
+        "morelogin": [("Morelogin 100 Minutes", 30)] # FIXED: small letter + price thik korlam
     }
     for name, price in products.get(category, []):
         markup.add(InlineKeyboardButton(f"🛒 {name} - 💎 {price} BDT", callback_data=f"select_qty|{category}|{name}|{price}"))
