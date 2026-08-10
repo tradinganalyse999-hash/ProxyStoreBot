@@ -26,7 +26,7 @@ def product_menu(category):
     markup = InlineKeyboardMarkup(row_width=1)
     products = {
         "vpn": [
-            ("Nord VPN 1 Month", 25.00), ("Hma Vpn 7 Days", 30.00), ("Proton Vpn 14 Day", 50.00),
+            ("Nord VPN 7 Days", 25.00), ("Hma Vpn 7 Days", 30.00), ("Proton Vpn 14 Day", 50.00),
             ("Surfshark 7 Days", 25.00), ("Hotspot Shield 7 Days", 25.00), ("Cyber Ghost Vpn 3 Day", 20.00),
             ("Avast 7 Days", 25.00), ("Vpn - Viper 3 Days", 25.00), ("Ip Vanish 7 Days", 25.00),
             ("Pia 7 Days", 25.00), ("Pure 7 Days", 25.00), ("Potato 7 Days", 25.00), 
