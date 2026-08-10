@@ -1,6 +1,8 @@
-import os
-
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
-SUPPORT_USERNAME = "@PolasChandra"
+BOT_TOKEN = "YOUR_TOKEN"
+ADMIN_ID = 123456789
+SUPPORT_USERNAME = "@YourSupport"
 BOT_NAME = "ProxyStore AI"
+
+FORCE_JOIN_CHANNEL = "@Proxystore999"
+FORCE_JOIN_CHANNEL_ID = -1004441570583
+FORCE_JOIN_LINK = "https://t.me/Proxystore999"
