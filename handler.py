@@ -1,17 +1,42 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from states import user_state
-from config import ADMIN_ID, SUPPORT_USERNAME, BOT_NAME
-from buttons import main_menu, shop_menu, deposit_menu, product_menu, quantity_menu
+from config import ADMIN_ID, SUPPORT_USERNAME, BOT_NAME, FORCE_JOIN_CHANNEL, FORCE_JOIN_LINK
+from buttons import main_menu, shop_menu, deposit_menu, product_menu, quantity_menu, force_join_menu
 from admin import admin_buttons
-from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c, get_all_users, get_stock_count, take_codes, add_stock
+from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c, get_all_users, get_stock_count, take_codes, add_stock, add_referral, activate_referral_bonus, get_refer_stats
 from bot import bot
 import io
+
+def is_user_joined(bot, user_id):
+    try:
+        member = bot.get_chat_member(FORCE_JOIN_CHANNEL, user_id)
+        return member.status in ['member', 'administrator', 'creator']
+    except:
+        return True
 
 def register_handlers(bot):
 
     @bot.message_handler(commands=["start"])
     def start(message):
-        create_user(message.from_user.id)
+        user_id = message.from_user.id
+        # Referral check - start param theke
+        args = message.text.split()
+        if len(args) > 1:
+            try:
+                ref_id = int(args[1])
+                if ref_id!= user_id:
+                    create_user(user_id, ref_id)
+                    add_referral(ref_id, user_id)
+            except:
+                create_user(user_id)
+        else:
+            create_user(user_id)
+
+        # Force Join Check - OLD + NEW sobar jonno
+        if not is_user_joined(bot, user_id):
+            bot.send_message(message.chat.id, f"⚠️ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
+            return
+
         bot.send_message(message.chat.id, f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", reply_markup=main_menu())
 
     @bot.message_handler(commands=["admin"])
@@ -26,6 +51,21 @@ def register_handlers(bot):
         msg_id = call.message.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
+        create_user(user_id)
+
+        # 1. Verify Button
+        if call.data == "verify_join":
+            if is_user_joined(bot, user_id):
+                bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            else:
+                bot.answer_callback_query(call.id, "❌ Tumi ekhono Channel e Join koro nai! Age Join koro.", show_alert=True)
+            return
+
+        # 2. Prottek button e Force Join check (old user rao atke jabe)
+        if not is_user_joined(bot, user_id):
+            bot.send_message(chat_id, f"⚠️ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
+            bot.answer_callback_query(call.id, "⚠️ Age Channel Join Koro!")
+            return
 
         if call.data == "shop":
             try: bot.edit_message_text("🛒 Select Category", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
@@ -41,7 +81,7 @@ def register_handlers(bot):
         elif call.data == "hotmail_list":
             bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
         elif call.data == "morelogin_list":
-            bot.edit_message_text("🖥️ Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("morelogin"))
+            bot.edit_message_text("🖥 Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("morelogin"))
         elif call.data == "noop":
             bot.answer_callback_query(call.id, "Quantity change korte + - use koro")
         elif call.data.startswith("select_qty|"):
@@ -72,13 +112,12 @@ def register_handlers(bot):
                 if category in ["proxy", "morelogin"]:
                     available = get_stock_count(category, name)
                     if available < qty:
-                        bot.send_message(ADMIN_ID, f"⚠️ Stock sesh! {name} - {qty} pcs order asche but stock {available} pcs")
+                        bot.send_message(ADMIN_ID, f"⚠ Stock sesh! {name} - {qty} pcs order asche but stock {available} pcs")
                         bot.edit_message_text(f"❌ Stock e nai. Admin ke janao. Stock: {available} pcs", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                         return
                 update_balance(user_id, -total_price)
                 if category in ["proxy", "morelogin"]:
                     codes = take_codes(category, name, qty)
-                    # SHEET BANANO - Product name + Pis soho
                     import openpyxl
                     wb = openpyxl.Workbook()
                     ws = wb.active
@@ -156,6 +195,12 @@ def register_handlers(bot):
             amount = float(parts[2])
             update_balance(target_user, amount)
             new_balance = get_balance(target_user)
+            # REFER BONUS - 1 BAR E, 10 TK MINIMUM
+            bonus_to = activate_referral_bonus(target_user, amount)
+            if bonus_to:
+                try:
+                    bot.send_message(bonus_to, f"🎉 Refer Bonus! Tomar refer kora user {target_user} {amount:.0f} BDT deposit korse, tai tumi 0.50 BDT bonus paiso! (1 bar er jonno)")
+                except: pass
             success_msg = f"✅ ডিপোজিট সফল!\n\n💰 যোগ হয়েছে: +{amount:.2f} টাকা\n💳 ব্যালেন্স: {new_balance:.2f} টাকা"
             bot.send_message(target_user, success_msg)
             bot.edit_message_text(f"✅ Confirmed. {amount} BDT added to {target_user}", chat_id=chat_id, message_id=msg_id)
@@ -180,6 +225,14 @@ def register_handlers(bot):
             try:
                 bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
             except: pass
+        # --- NOTUN REFER BUTTON ---
+        elif call.data == "refer":
+            count, earn = get_refer_stats(user_id)
+            bot_username = bot.get_me().username
+            link = f"https://t.me/{bot_username}?start={user_id}"
+            text = f"👥 **Refer & Earn**\n\n🔗 Tomar Link:\n`{link}`\n\n👤 Total Refer: {count}\n💰 Earn: {earn:.2f} BDT\n\n📢 **Note:** Tomar link e join kora user jodi minimum 10 TK deposit kore, tahole tumi 0.50 BDT paba. 1 jon user er jonno 1 bar e paba, bar bar deposit e bonus paba na."
+            bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu(), parse_mode="Markdown")
+
         bot.answer_callback_query(call.id)
 
     @bot.message_handler(func=lambda m: m.from_user.id in user_state, content_types=['text', 'document'])
