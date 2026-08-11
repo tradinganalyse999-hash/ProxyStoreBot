@@ -211,3 +211,7 @@ def get_refer_stats(user_id):
         c.execute("SELECT referral_count, total_referral_earning FROM users WHERE user_id=?", (user_id,))
     data = c.fetchone()
     return data if data else (0, 0.0)
+
+def get_all_stock():
+    c.execute("SELECT category, product_name, COUNT(*) FROM stocks GROUP BY category, product_name")
+    return c.fetchall()
