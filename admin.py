@@ -11,6 +11,7 @@ def admin_buttons():
         InlineKeyboardButton("📦 Add Stock", callback_data="admin_add_stock")
     )
     markup.add(
+        InlineKeyboardButton("📊 Stock List", callback_data="admin_stock_list"),
         InlineKeyboardButton("📢 Broadcast", callback_data="admin_broadcast")
     )
     return markup
