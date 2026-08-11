@@ -60,13 +60,17 @@ def product_menu(category):
     # Jodi stock e na thake, default products dekhao (tomar ager system er moto)
     if not products:
         if category == "proxy":
-            markup.add(InlineKeyboardButton("Owl Proxy 200MB", callback_data="select_qty|proxy|Owl Proxy 200MB|3"))
+            markup.add(InlineKeyboardButton("Owl Proxy 200MB 3 BDT", callback_data="select_qty|proxy|Owl Proxy 200MB|3"))
         elif category == "morelogin":
-            markup.add(InlineKeyboardButton("Morelogin 100 Minutes", callback_data="select_qty|morelogin|Morelogin 100 Minutes|30"))
+            markup.add(InlineKeyboardButton("Morelogin 100 Minutes 30 BDT", callback_data="select_qty|morelogin|Morelogin 100 Minutes|30"))
         elif category == "vpn":
-            markup.add(InlineKeyboardButton("VPN 7 days", callback_data="select_qty|vpn|VPN 7 days|25"))
+            markup.add(InlineKeyboardButton("Nord VPN 7 days 25 BDT", callback_data="select_qty|vpn|Nord VPN 7 days|25")) ("Hma Vpn 7 Days BDT", 30.00), ("Proton Vpn 14 Day BDT", 50.00),
+            ("Surfshark 7 Days 25 BDT), ("Hotspot Shield 7 Days 25 BDT), ("Cyber Ghost Vpn 3 Day 20 BDT),
+            ("Avast 7 Days 25 BDT), ("Vpn - Viper 3 Days 25 BDT), ("Ip Vanish 7 Days 25 BDT),
+            ("Pia 7 Days 25 BDT), ("Pure 7 Days 25 BDT), ("Potato 7 Days 25 BDT), 
+            ("Sky 7 Days 25 BDT), ("Turbo 7 Days 25 BDT)],
         elif category == "gmail":
-            markup.add(InlineKeyboardButton("Gmail Fresh", callback_data="select_qty|gmail|Gmail Fresh|40"))
+            markup.add(InlineKeyboardButton("Gmail.com 40 BDT", callback_data="select_qty|gmail|Gmail Fresh|40"))
         elif category == "outlook":
             markup.add(InlineKeyboardButton("Outlook Fresh", callback_data="select_qty|outlook|Outlook Fresh|0.80"))
         elif category == "hotmail":
