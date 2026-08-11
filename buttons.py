@@ -36,16 +36,15 @@ def deposit_menu():
 
 def product_menu(category):
     markup = InlineKeyboardMarkup()
-    
+
     if category == "proxy":
-        markup.add(InlineKeyboardButton("Owl Proxy 200MB 3 BDT", callback_data="select_qty|proxy|Owl Proxy 200MB|3"))
-        markup.add(InlineKeyboardButton("ABC Proxy 1 GB 290 BDT", callback_data="select_qty|proxy|ABC Proxy 1 GB|290"))
-        markup.add(InlineKeyboardButton("Dataimpluse Proxy 1 GB 150 BDT", callback_data="select_qty|proxy|Dataimpluse Proxy 1 GB|150"))
-        markup.add(InlineKeyboardButton("Rapid Proxy 500 MB 80 BDT", callback_data="select_qty|proxy|Rapid Proxy 500 MB|80"))
+        markup.add(InlineKeyboardButton("Owl Proxy 200MB 3 BDT [AUTO]", callback_data="select_qty|proxy|Owl Proxy 200MB|3"))
+        markup.add(InlineKeyboardButton("ABC Proxy 1 GB 290 BDT [MANUAL]", callback_data="select_qty|proxy|ABC Proxy 1 GB|290"))
+        markup.add(InlineKeyboardButton("Dataimpluse Proxy 1 GB 150 BDT [MANUAL]", callback_data="select_qty|proxy|Dataimpluse Proxy 1 GB|150"))
+        markup.add(InlineKeyboardButton("Rapid Proxy 500 MB 80 BDT [MANUAL]", callback_data="select_qty|proxy|Rapid Proxy 500 MB|80"))
     elif category == "morelogin":
-        markup.add(InlineKeyboardButton("Morelogin 100 Minutes 30 BDT", callback_data="select_qty|morelogin|Morelogin 100 Minutes|30"))
+        markup.add(InlineKeyboardButton("Morelogin 100 Minutes 30 BDT [AUTO]", callback_data="select_qty|morelogin|Morelogin 100 Minutes|30"))
     elif category == "vpn":
-        # Tomar 12 ta VPN List
         markup.add(InlineKeyboardButton("Nord VPN 7 Days 25 BDT", callback_data="select_qty|vpn|Nord VPN 7 Days|25"))
         markup.add(InlineKeyboardButton("HMA VPN 7 Days 25 BDT", callback_data="select_qty|vpn|HMA VPN 7 Days|25"))
         markup.add(InlineKeyboardButton("Proton VPN 14 Days 50 BDT", callback_data="select_qty|vpn|Proton VPN 14 Days|50"))
