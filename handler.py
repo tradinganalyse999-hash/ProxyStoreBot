@@ -19,7 +19,6 @@ def register_handlers(bot):
     @bot.message_handler(commands=["start"])
     def start(message):
         user_id = message.from_user.id
-        # Referral check - start param theke
         args = message.text.split()
         if len(args) > 1:
             try:
@@ -32,7 +31,6 @@ def register_handlers(bot):
         else:
             create_user(user_id)
 
-        # Force Join Check - OLD + NEW sobar jonno
         if not is_user_joined(bot, user_id):
             bot.send_message(message.chat.id, f"⚠️ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
             return
@@ -53,7 +51,6 @@ def register_handlers(bot):
         user_id = call.from_user.id
         create_user(user_id)
 
-        # 1. Verify Button
         if call.data == "verify_join":
             if is_user_joined(bot, user_id):
                 bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
@@ -61,7 +58,6 @@ def register_handlers(bot):
                 bot.answer_callback_query(call.id, "❌ Tumi ekhono Channel e Join koro nai! Age Join koro.", show_alert=True)
             return
 
-        # 2. Prottek button e Force Join check (old user rao atke jabe)
         if not is_user_joined(bot, user_id):
             bot.send_message(chat_id, f"⚠️ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
             bot.answer_callback_query(call.id, "⚠️ Age Channel Join Koro!")
@@ -195,7 +191,6 @@ def register_handlers(bot):
             amount = float(parts[2])
             update_balance(target_user, amount)
             new_balance = get_balance(target_user)
-            # REFER BONUS - 1 BAR E, 10 TK MINIMUM
             bonus_to = activate_referral_bonus(target_user, amount)
             if bonus_to:
                 try:
@@ -216,8 +211,16 @@ def register_handlers(bot):
             text = "📦 My Orders\nNo orders yet" if not orders else "📦 My Orders\n"+"\n".join([f"• {x[0]} - {x[1]} BDT - {x[2]}" for x in orders])
             bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
         elif call.data == "support":
-            support_text = f"🆘 Support Center\nSupport: {SUPPORT_USERNAME}"
-            bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            support_text = (
+                "🛡 **SUPPORT UPDATE**\n\n"
+                "📩 কোনো সমস্যা, অর্ডার বা পেমেন্ট সংক্রান্ত বিষয় থাকলে আমাদের Support-এ যোগাযোগ করুন।\n\n"
+                "⚡ দ্রুত Response\n"
+                "🤝 Friendly Support\n"
+                "🕒 24/7 Assistance\n\n"
+                "❗ Support : @PolasChandra\n\n"
+                "❤ Proxy Store — আমরা আছি আপনার পাশে।"
+            )
+            bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu(), parse_mode="Markdown")
         elif call.data == "about":
             about_text = f"ℹ About {BOT_NAME}"
             bot.edit_message_text(about_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
@@ -225,7 +228,6 @@ def register_handlers(bot):
             try:
                 bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
             except: pass
-        # --- NOTUN REFER BUTTON ---
         elif call.data == "refer":
             count, earn = get_refer_stats(user_id)
             bot_username = bot.get_me().username
