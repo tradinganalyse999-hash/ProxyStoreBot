@@ -2,7 +2,7 @@ import os
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
-SUPPORT_USERNAME = os.environ.get("SUPPORT_USERNAME", "@YourSupport")
+SUPPORT_USERNAME = os.environ.get("SUPPORT_USERNAME", "@PolasChandra")
 BOT_NAME = os.environ.get("BOT_NAME", "ProxyStore AI")
 
 FORCE_JOIN_CHANNEL = os.environ.get("FORCE_JOIN_CHANNEL", "@Proxystore999")
