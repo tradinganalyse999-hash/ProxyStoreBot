@@ -43,6 +43,7 @@ def product_menu(category):
         markup.add(InlineKeyboardButton("Morelogin 100 Minutes 30 BDT", callback_data="select_qty|morelogin|Morelogin 100 Minutes|30"))
     elif category == "vpn":
         # Tomar 12 ta VPN List
+        markup.add(InlineKeyboardButton("Nord VPN 7 Days 25 BDT", callback_data="select_qty|vpn|Nord VPN 7 Days|25"))
         markup.add(InlineKeyboardButton("HMA VPN 7 Days 25 BDT", callback_data="select_qty|vpn|HMA VPN 7 Days|25"))
         markup.add(InlineKeyboardButton("Proton VPN 14 Days 50 BDT", callback_data="select_qty|vpn|Proton VPN 14 Days|50"))
         markup.add(InlineKeyboardButton("Surfshark 7 Days 25 BDT", callback_data="select_qty|vpn|Surfshark 7 Days|25"))
