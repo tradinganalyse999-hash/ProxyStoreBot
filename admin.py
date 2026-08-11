@@ -7,7 +7,10 @@ def admin_buttons():
         InlineKeyboardButton("📦 All Orders", callback_data="admin_orders")
     )
     markup.add(
-        InlineKeyboardButton("📢 Broadcast", callback_data="admin_broadcast"),
-        InlineKeyboardButton("📦 Add Stock", callback_data="admin_add_stock") # NEW
+        InlineKeyboardButton("⏳ Pending Orders", callback_data="admin_pending"),
+        InlineKeyboardButton("📦 Add Stock", callback_data="admin_add_stock")
+    )
+    markup.add(
+        InlineKeyboardButton("📢 Broadcast", callback_data="admin_broadcast")
     )
     return markup
