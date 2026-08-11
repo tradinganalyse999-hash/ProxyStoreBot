@@ -105,14 +105,23 @@ def register_handlers(bot):
             total_price = price * qty
             balance = get_balance(user_id)
             if balance >= total_price:
-                if category in ["proxy", "morelogin"]:
+                # --- AUTO CHECK: Sudu Owl + Morelogin Auto ---
+                is_auto = False
+                if category == "morelogin":
+                    is_auto = True
+                elif category == "proxy" and "owl" in name.lower():
+                    is_auto = True
+
+                if is_auto:
                     available = get_stock_count(category, name)
                     if available < qty:
                         bot.send_message(ADMIN_ID, f"⚠ Stock sesh! {name} - {qty} pcs order asche but stock {available} pcs")
                         bot.edit_message_text(f"❌ Stock e nai. Admin ke janao. Stock: {available} pcs", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                         return
+
                 update_balance(user_id, -total_price)
-                if category in ["proxy", "morelogin"]:
+
+                if is_auto:
                     codes = take_codes(category, name, qty)
                     import openpyxl
                     wb = openpyxl.Workbook()
@@ -132,11 +141,10 @@ def register_handlers(bot):
                     bot.send_document(user_id, file_stream, caption=f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nProblem hole {SUPPORT_USERNAME}")
                     bot.edit_message_text(f"✅ Order Complete! File upore diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                 else:
-                    # MANUAL - PENDING ORDER
                     oid = add_order(user_id, f"{name} x{qty}", total_price)
                     update_order_status(oid, "Pending")
                     bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nAdmin 5-10 min er moddhe code diye dibe", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
-                    bot.send_message(ADMIN_ID, f"🛒 New Manual Order\nOrder ID: {oid}\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT\n\n/admin > Pending Orders e giye Approve koro")
+                    bot.send_message(ADMIN_ID, f"🛒 New Manual Order\nOrder ID: {oid}\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT\n\n/admin > Pending Orders")
             else:
                 bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
         elif call.data == "admin_add_stock":
@@ -284,7 +292,7 @@ def register_handlers(bot):
             state["category"] = cat
             state["step"] = "stock_product"
             if cat == "proxy":
-                bot.send_message(message.chat.id, "Product er name ki? Likhba:\n`Owl Proxy 200MB`", parse_mode="Markdown")
+                bot.send_message(message.chat.id, "Product er name ki? Likhba:\n`Owl Proxy 200MB`\n`ABC Proxy 1 GB`\n`Dataimpluse Proxy 1 GB`\n`Rapid Proxy 500 MB`", parse_mode="Markdown")
             else:
                 bot.send_message(message.chat.id, "Product er name ki? Likhba:\n`Morelogin 100 Minutes`", parse_mode="Markdown")
 
