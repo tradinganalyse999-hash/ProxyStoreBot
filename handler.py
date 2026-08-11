@@ -32,7 +32,7 @@ def register_handlers(bot):
             create_user(user_id)
 
         if not is_user_joined(bot, user_id):
-            bot.send_message(message.chat.id, f"⚠️ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
+            bot.send_message(message.chat.id, f"⚠ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
             return
 
         bot.send_message(message.chat.id, f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", reply_markup=main_menu())
@@ -59,8 +59,8 @@ def register_handlers(bot):
             return
 
         if not is_user_joined(bot, user_id):
-            bot.send_message(chat_id, f"⚠️ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
-            bot.answer_callback_query(call.id, "⚠️ Age Channel Join Koro!")
+            bot.send_message(chat_id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
+            bot.answer_callback_query(call.id, "⚠ Age Channel Join Koro!")
             return
 
         if call.data == "shop":
@@ -132,9 +132,11 @@ def register_handlers(bot):
                     bot.send_document(user_id, file_stream, caption=f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nProblem hole {SUPPORT_USERNAME}")
                     bot.edit_message_text(f"✅ Order Complete! File upore diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                 else:
-                    add_order(user_id, f"{name} x{qty}", total_price)
+                    # MANUAL - PENDING ORDER
+                    oid = add_order(user_id, f"{name} x{qty}", total_price)
+                    update_order_status(oid, "Pending")
                     bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nAdmin 5-10 min er moddhe code diye dibe", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
-                    bot.send_message(ADMIN_ID, f"🛒 New Manual Order\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT")
+                    bot.send_message(ADMIN_ID, f"🛒 New Manual Order\nOrder ID: {oid}\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT\n\n/admin > Pending Orders e giye Approve koro")
             else:
                 bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
         elif call.data == "admin_add_stock":
@@ -164,12 +166,12 @@ def register_handlers(bot):
                 return
             for o in orders:
                 markup = InlineKeyboardMarkup()
-                markup.add(InlineKeyboardButton("✅ Approve", callback_data=f"approve_{o[0]}"))
+                markup.add(InlineKeyboardButton("✅ Approve & Send Code", callback_data=f"approve_{o[0]}"))
                 bot.send_message(chat_id, f"🛒 Order ID: {o[0]}\nUser: {o[1]}\nProduct: {o[2]}\nPrice: {o[3]} BDT", reply_markup=markup)
         elif call.data.startswith("approve_"):
             if user_id!= ADMIN_ID: return
             order_id = int(call.data.split("_")[1])
-            bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}")
+            bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}\n\nCode ta likhe pathao, user er kache chole jabe")
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
         elif call.data == "deposit":
             bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
@@ -317,9 +319,15 @@ def register_handlers(bot):
             order_id = state["order_id"]
             code = message.text
             order = get_order_by_id(order_id)
+            if not order:
+                bot.send_message(message.chat.id, f"❌ Order {order_id} pawa jay nai")
+                del user_state[user_id]
+                return
+            user_to_send = order[1]
+            prod = order[2]
             update_order_status(order_id, "Approved")
-            bot.send_message(order[1], f"✅ Your Order Approved!\n\nProduct: {order[2]}\nCode: `{code}`", parse_mode="Markdown")
-            bot.send_message(message.chat.id, f"✅ Order {order_id} Approved")
+            bot.send_message(user_to_send, f"✅ Your Order Approved!\n\n📦 Product: {prod}\n🔑 Code:\n`{code}`\n\nThanks for shopping!", parse_mode="Markdown")
+            bot.send_message(message.chat.id, f"✅ Order {order_id} Approved & Code sent to {user_to_send}")
             del user_state[user_id]
         elif state["step"] == "amount":
             state["amount"] = message.text
