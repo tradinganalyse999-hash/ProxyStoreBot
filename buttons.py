@@ -60,24 +60,23 @@ def product_menu(category):
     # Jodi stock e na thake, default products dekhao (tomar ager system er moto)
     if not products:
         if category == "proxy":
-            markup.add(InlineKeyboardButton("Owl Proxy 200MB", callback_data="select_qty|proxy|Owl Proxy 200MB|60"))
-            markup.add(InlineKeyboardButton("Owl Proxy 1GB", callback_data="select_qty|proxy|Owl Proxy 1GB|150"))
+            markup.add(InlineKeyboardButton("Owl Proxy 200MB", callback_data="select_qty|proxy|Owl Proxy 200MB|3"))
         elif category == "morelogin":
-            markup.add(InlineKeyboardButton("Morelogin 100 Minutes", callback_data="select_qty|morelogin|Morelogin 100 Minutes|120"))
+            markup.add(InlineKeyboardButton("Morelogin 100 Minutes", callback_data="select_qty|morelogin|Morelogin 100 Minutes|30"))
         elif category == "vpn":
-            markup.add(InlineKeyboardButton("VPN 1 Month", callback_data="select_qty|vpn|VPN 1 Month|100"))
+            markup.add(InlineKeyboardButton("VPN 7 days", callback_data="select_qty|vpn|VPN 7 days|25"))
         elif category == "gmail":
-            markup.add(InlineKeyboardButton("Gmail Fresh", callback_data="select_qty|gmail|Gmail Fresh|30"))
+            markup.add(InlineKeyboardButton("Gmail Fresh", callback_data="select_qty|gmail|Gmail Fresh|40"))
         elif category == "outlook":
-            markup.add(InlineKeyboardButton("Outlook Fresh", callback_data="select_qty|outlook|Outlook Fresh|30"))
+            markup.add(InlineKeyboardButton("Outlook Fresh", callback_data="select_qty|outlook|Outlook Fresh|0.80"))
         elif category == "hotmail":
-            markup.add(InlineKeyboardButton("Hotmail Fresh", callback_data="select_qty|hotmail|Hotmail Fresh|30"))
+            markup.add(InlineKeyboardButton("Hotmail Fresh", callback_data="select_qty|hotmail|Hotmail Fresh|0.80"))
     else:
         for p in products:
             name = p[0]
             # Price logic
             price = 60
-            if "200MB" in name: price = 60
+            if "200MB" in name: price = 3
             elif "1GB" in name: price = 150
             elif "10GB" in name: price = 500
             elif "Morelogin" in name: price = 120
