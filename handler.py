@@ -3,7 +3,7 @@ from states import user_state
 from config import ADMIN_ID, SUPPORT_USERNAME, BOT_NAME, FORCE_JOIN_CHANNEL, FORCE_JOIN_LINK
 from buttons import main_menu, shop_menu, deposit_menu, product_menu, quantity_menu, force_join_menu
 from admin import admin_buttons
-from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c, get_all_users, get_stock_count, take_codes, add_stock, add_referral, activate_referral_bonus, get_refer_stats
+from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c, get_all_users, get_stock_count, take_codes, add_stock, add_referral, activate_referral_bonus, get_refer_stats, get_all_stock
 from bot import bot
 import io
 
@@ -105,7 +105,6 @@ def register_handlers(bot):
             total_price = price * qty
             balance = get_balance(user_id)
             if balance >= total_price:
-                # --- AUTO CHECK: Sudu Owl + Morelogin Auto ---
                 is_auto = False
                 if category == "morelogin":
                     is_auto = True
@@ -165,6 +164,16 @@ def register_handlers(bot):
             orders = c.fetchall()
             text = "📦 No orders yet" if not orders else "📦 Last 20 Orders\n"+"\n".join([f"ID: {x[0]} | User: {x[1]}\nProduct: {x[2]}\nPrice: {x[3]} BDT | {x[4]}\n" for x in orders])
             bot.send_message(chat_id, text)
+        elif call.data == "admin_stock_list":
+            if user_id!= ADMIN_ID: return
+            stocks = get_all_stock()
+            if not stocks:
+                bot.send_message(chat_id, "📦 Stock khali - kono stock add kora nai")
+                return
+            text = "📊 **Stock List**\n\n"
+            for cat, prod, count in stocks:
+                text += f"• {cat} | {prod} : {count} pcs\n"
+            bot.send_message(chat_id, text, parse_mode="Markdown")
         elif call.data == "admin_pending":
             if user_id!= ADMIN_ID: return
             c.execute("SELECT id, user_id, product, price FROM orders WHERE status='Pending' ORDER BY id DESC")
