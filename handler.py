@@ -11,8 +11,9 @@ def is_user_joined(bot, user_id):
     try:
         member = bot.get_chat_member(FORCE_JOIN_CHANNEL, user_id)
         return member.status in ['member', 'administrator', 'creator']
-    except:
-        return True
+    except Exception as e:
+        print(f"Join check error {user_id}: {e}")
+        return False
 
 def register_handlers(bot):
 
@@ -31,8 +32,9 @@ def register_handlers(bot):
         else:
             create_user(user_id)
 
+        # --- FORCE JOIN FOR NEW + OLD ---
         if not is_user_joined(bot, user_id):
-            bot.send_message(message.chat.id, f"⚠ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
+            bot.send_message(message.chat.id, f"⚠ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore niche Verify Join e click koro.", reply_markup=force_join_menu())
             return
 
         bot.send_message(message.chat.id, f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", reply_markup=main_menu())
@@ -58,6 +60,7 @@ def register_handlers(bot):
                 bot.answer_callback_query(call.id, "❌ Tumi ekhono Channel e Join koro nai! Age Join koro.", show_alert=True)
             return
 
+        # --- SECOND LOCK FOR ALL BUTTONS ---
         if not is_user_joined(bot, user_id):
             bot.send_message(chat_id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
             bot.answer_callback_query(call.id, "⚠ Age Channel Join Koro!")
@@ -160,10 +163,15 @@ def register_handlers(bot):
             user_state[user_id] = {"step": "admin_user_id"}
         elif call.data == "admin_orders":
             if user_id!= ADMIN_ID: return
-            c.execute("SELECT id, user_id, product, price, status FROM orders ORDER BY id DESC LIMIT 20")
-            orders = c.fetchall()
-            text = "📦 No orders yet" if not orders else "📦 Last 20 Orders\n"+"\n".join([f"ID: {x[0]} | User: {x[1]}\nProduct: {x[2]}\nPrice: {x[3]} BDT | {x[4]}\n" for x in orders])
-            bot.send_message(chat_id, text)
+            try:
+                c.execute("SELECT id, user_id, product, price, status FROM orders ORDER BY id DESC LIMIT 20")
+                orders = c.fetchall()
+                text = "📦 No orders yet" if not orders else "📦 Last 20 Orders\n"+"\n".join([f"ID: {x[0]} | User: {x[1]}\nProduct: {x[2]}\nPrice: {x[3]} BDT | {x[4]}\n" for x in orders])
+                bot.send_message(chat_id, text)
+            except Exception as e:
+                from database import conn
+                conn.rollback()
+                bot.send_message(chat_id, f"Error: {e}")
         elif call.data == "admin_stock_list":
             if user_id!= ADMIN_ID: return
             stocks = get_all_stock()
@@ -176,15 +184,20 @@ def register_handlers(bot):
             bot.send_message(chat_id, text, parse_mode="Markdown")
         elif call.data == "admin_pending":
             if user_id!= ADMIN_ID: return
-            c.execute("SELECT id, user_id, product, price FROM orders WHERE status='Pending' ORDER BY id DESC")
-            orders = c.fetchall()
-            if not orders:
-                bot.send_message(chat_id, "✅ No Pending Orders")
-                return
-            for o in orders:
-                markup = InlineKeyboardMarkup()
-                markup.add(InlineKeyboardButton("✅ Approve & Send Code", callback_data=f"approve_{o[0]}"))
-                bot.send_message(chat_id, f"🛒 Order ID: {o[0]}\nUser: {o[1]}\nProduct: {o[2]}\nPrice: {o[3]} BDT", reply_markup=markup)
+            try:
+                c.execute("SELECT id, user_id, product, price FROM orders WHERE status='Pending' ORDER BY id DESC")
+                orders = c.fetchall()
+                if not orders:
+                    bot.send_message(chat_id, "✅ No Pending Orders")
+                    return
+                for o in orders:
+                    markup = InlineKeyboardMarkup()
+                    markup.add(InlineKeyboardButton("✅ Approve & Send Code", callback_data=f"approve_{o[0]}"))
+                    bot.send_message(chat_id, f"🛒 Order ID: {o[0]}\nUser: {o[1]}\nProduct: {o[2]}\nPrice: {o[3]} BDT", reply_markup=markup)
+            except Exception as e:
+                from database import conn
+                conn.rollback()
+                bot.send_message(chat_id, f"Error: {e}")
         elif call.data.startswith("approve_"):
             if user_id!= ADMIN_ID: return
             order_id = int(call.data.split("_")[1])
