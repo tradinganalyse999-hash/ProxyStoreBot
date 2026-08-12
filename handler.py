@@ -203,23 +203,33 @@ def register_handlers(bot):
             order_id = int(call.data.split("_")[1])
             bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}\n\nCode ta likhe pathao, user er kache chole jabe")
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
-        elif call.data == "deposit":
-            bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+               elif call.data == "deposit":
+            try:
+                bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+            except: pass
         elif call.data == "bkash":
-            bot.edit_message_text("💳 bKash Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            try:
+                bot.edit_message_text("💳 bKash Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            except: pass
         elif call.data == "nagad":
-            bot.edit_message_text("💳 Nagad Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            try:
+                bot.edit_message_text("💳 Nagad Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            except: pass
         elif call.data == "rocket":
-            bot.edit_message_text("💳 Rocket Personal\n`off ase akon`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            try:
+                bot.edit_message_text("💳 Rocket Personal\n`off ase akon`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            except: pass
         elif call.data == "usdt":
-            bot.edit_message_text(
-                "💲 USDT Payment\n\n"
-                "🔹 TRC20:\n`TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz`\n\n"
-                "🔹 BEP20:\n`0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268`\n\n"
-                "1. Address copy kore payment korun\n"
-                "2. Payment er por 'Submit Payment' e click korun",
-                chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown"
-            )
+            try:
+                bot.edit_message_text(
+                    "💲 USDT Payment\n\n"
+                    "🔹 TRC20:\n`TGE8oPaj7cYP14xuoHTZT19KxwSf12FYoz`\n\n"
+                    "🔹 BEP20:\n`0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268`\n\n"
+                    "1. Address copy kore payment korun\n"
+                    "2. Payment er por 'Submit Payment' e click korun",
+                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown"
+                )
+            except: pass
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
         elif call.data.startswith("confirm_"):
