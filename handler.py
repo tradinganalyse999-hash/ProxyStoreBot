@@ -32,9 +32,8 @@ def register_handlers(bot):
         else:
             create_user(user_id)
 
-        # --- FORCE JOIN FOR NEW + OLD ---
-        if not is_user_joined(bot, user_id):
-            bot.send_message(message.chat.id, f"⚠ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore niche Verify Join e click koro.", reply_markup=force_join_menu())
+        if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
+            bot.send_message(message.chat.id, f"⚠ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
             return
 
         bot.send_message(message.chat.id, f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", reply_markup=main_menu())
@@ -55,48 +54,58 @@ def register_handlers(bot):
 
         if call.data == "verify_join":
             if is_user_joined(bot, user_id):
-                bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                try: bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                except: pass
             else:
                 bot.answer_callback_query(call.id, "❌ Tumi ekhono Channel e Join koro nai! Age Join koro.", show_alert=True)
             return
 
-        # --- SECOND LOCK FOR ALL BUTTONS ---
-        if not is_user_joined(bot, user_id):
+        if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
+            try: bot.answer_callback_query(call.id, "⚠ Age Channel Join Koro!")
+            except: pass
             bot.send_message(chat_id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
-            bot.answer_callback_query(call.id, "⚠ Age Channel Join Koro!")
             return
 
         if call.data == "shop":
             try: bot.edit_message_text("🛒 Select Category", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
             except: pass
         elif call.data == "vpn_list":
-            bot.edit_message_text("🌐 VPN Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("vpn"))
+            try: bot.edit_message_text("🌐 VPN Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("vpn"))
+            except: pass
         elif call.data == "proxy_list":
-            bot.edit_message_text("🌍 Proxy Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("proxy"))
+            try: bot.edit_message_text("🌍 Proxy Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("proxy"))
+            except: pass
         elif call.data == "gmail_list":
-            bot.edit_message_text("📧 Gmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("gmail"))
+            try: bot.edit_message_text("📧 Gmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("gmail"))
+            except: pass
         elif call.data == "outlook_list":
-            bot.edit_message_text("📮 Outlook Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("outlook"))
+            try: bot.edit_message_text("📮 Outlook Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("outlook"))
+            except: pass
         elif call.data == "hotmail_list":
-            bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
+            try: bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
+            except: pass
         elif call.data == "morelogin_list":
-            bot.edit_message_text("🖥 Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("morelogin"))
+            try: bot.edit_message_text("🖥 Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("morelogin"))
+            except: pass
         elif call.data == "noop":
             bot.answer_callback_query(call.id, "Quantity change korte + - use koro")
         elif call.data.startswith("select_qty|"):
             parts = call.data.split("|")
             category, name, price = parts[1], parts[2], float(parts[3])
-            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: 1", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, 1))
+            try: bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: 1", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, 1))
+            except: pass
         elif call.data.startswith("qty_plus|"):
             parts = call.data.split("|")
             category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             qty += 1
-            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
+            try: bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
+            except: pass
         elif call.data.startswith("qty_minus|"):
             parts = call.data.split("|")
             category, name, price, qty = parts[1], parts[2], float(parts[3]), int(parts[4])
             if qty > 1: qty -= 1
-            bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
+            try: bot.edit_message_text(f"🛒 {name}\n💎 Price: {price} BDT\nStock: unlimited\nQuantity: {qty}", chat_id=chat_id, message_id=msg_id, reply_markup=quantity_menu(category, name, price, qty))
+            except: pass
         elif call.data.startswith("custom_qty|"):
             parts = call.data.split("|")
             category, name, price = parts[1], parts[2], float(parts[3])
@@ -109,20 +118,16 @@ def register_handlers(bot):
             balance = get_balance(user_id)
             if balance >= total_price:
                 is_auto = False
-                if category == "morelogin":
-                    is_auto = True
-                elif category == "proxy" and "owl" in name.lower():
-                    is_auto = True
-
+                if category == "morelogin": is_auto = True
+                elif category == "proxy" and "owl" in name.lower(): is_auto = True
                 if is_auto:
                     available = get_stock_count(category, name)
                     if available < qty:
                         bot.send_message(ADMIN_ID, f"⚠ Stock sesh! {name} - {qty} pcs order asche but stock {available} pcs")
-                        bot.edit_message_text(f"❌ Stock e nai. Admin ke janao. Stock: {available} pcs", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                        try: bot.edit_message_text(f"❌ Stock e nai. Admin ke janao. Stock: {available} pcs", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                        except: pass
                         return
-
                 update_balance(user_id, -total_price)
-
                 if is_auto:
                     codes = take_codes(category, name, qty)
                     import openpyxl
@@ -133,29 +138,52 @@ def register_handlers(bot):
                     ws.column_dimensions['A'].width = 30
                     ws.column_dimensions['B'].width = 10
                     ws.column_dimensions['C'].width = 90
-                    for i, code in enumerate(codes, 1):
-                        ws.append([name, i, code])
+                    for i, code in enumerate(codes, 1): ws.append([name, i, code])
                     file_stream = io.BytesIO()
                     wb.save(file_stream)
                     file_stream.seek(0)
                     file_stream.name = f"{name.replace(' ','_')}_{qty}pcs.xlsx"
                     add_order(user_id, f"{name} x{qty}", total_price)
                     bot.send_document(user_id, file_stream, caption=f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nProblem hole {SUPPORT_USERNAME}")
-                    bot.edit_message_text(f"✅ Order Complete! File upore diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                    try: bot.edit_message_text(f"✅ Order Complete! File upore diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                    except: pass
                 else:
                     oid = add_order(user_id, f"{name} x{qty}", total_price)
                     update_order_status(oid, "Pending")
-                    bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nAdmin 5-10 min er moddhe code diye dibe", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                    try: bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nAdmin 5-10 min er moddhe code diye dibe", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                    except: pass
                     bot.send_message(ADMIN_ID, f"🛒 New Manual Order\nOrder ID: {oid}\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT\n\n/admin > Pending Orders")
             else:
-                bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+                try: bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+                except: pass
+
+        # --- DEPOSIT FIXED PART ---
+        elif call.data == "deposit":
+            try: bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
+            except: pass
+        elif call.data == "bkash":
+            try: bot.edit_message_text("💳 bKash Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            except: pass
+        elif call.data == "nagad":
+            try: bot.edit_message_text("💳 Nagad Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            except: pass
+        elif call.data == "rocket":
+            try: bot.edit_message_text("💳 Rocket Personal\n`off ase akon`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            except: pass
+        elif call.data == "usdt":
+            try: bot.edit_message_text("💲 USDT Payment\n\n🔹 TRC20:\n`TGE8oPaj7cYP14xuoHTZT19KxwSf12FYoz`\n\n🔹 BEP20:\n`0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268`\n\n1. Address copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            except: pass
+        elif call.data == "submit_payment":
+            user_state[user_id] = {"step": "amount"}
+            bot.send_message(chat_id, "💰 Enter Deposit Amount")
+
         elif call.data == "admin_add_stock":
             if user_id!= ADMIN_ID: return
-            bot.send_message(chat_id, "📦 File pathao\n.txt ba.xlsx\nFormat: prottek line/row e 1 ta code")
+            bot.send_message(chat_id, "📦 File pathao\n.txt ba.xlsx")
             user_state[user_id] = {"step": "wait_txt_file"}
         elif call.data == "admin_broadcast":
             if user_id!= ADMIN_ID: return
-            bot.send_message(chat_id, "📢 Broadcast message likhe pathao. Sob user pabe.")
+            bot.send_message(chat_id, "📢 Broadcast message likhe pathao.")
             user_state[user_id] = {"step": "broadcast_msg"}
         elif call.data == "admin_add_balance":
             if user_id!= ADMIN_ID: return
@@ -169,18 +197,16 @@ def register_handlers(bot):
                 text = "📦 No orders yet" if not orders else "📦 Last 20 Orders\n"+"\n".join([f"ID: {x[0]} | User: {x[1]}\nProduct: {x[2]}\nPrice: {x[3]} BDT | {x[4]}\n" for x in orders])
                 bot.send_message(chat_id, text)
             except Exception as e:
-                from database import conn
-                conn.rollback()
+                from database import conn; conn.rollback()
                 bot.send_message(chat_id, f"Error: {e}")
         elif call.data == "admin_stock_list":
             if user_id!= ADMIN_ID: return
             stocks = get_all_stock()
             if not stocks:
-                bot.send_message(chat_id, "📦 Stock khali - kono stock add kora nai")
+                bot.send_message(chat_id, "📦 Stock khali")
                 return
             text = "📊 **Stock List**\n\n"
-            for cat, prod, count in stocks:
-                text += f"• {cat} | {prod} : {count} pcs\n"
+            for cat, prod, count in stocks: text += f"• {cat} | {prod} : {count} pcs\n"
             bot.send_message(chat_id, text, parse_mode="Markdown")
         elif call.data == "admin_pending":
             if user_id!= ADMIN_ID: return
@@ -195,102 +221,68 @@ def register_handlers(bot):
                     markup.add(InlineKeyboardButton("✅ Approve & Send Code", callback_data=f"approve_{o[0]}"))
                     bot.send_message(chat_id, f"🛒 Order ID: {o[0]}\nUser: {o[1]}\nProduct: {o[2]}\nPrice: {o[3]} BDT", reply_markup=markup)
             except Exception as e:
-                from database import conn
-                conn.rollback()
+                from database import conn; conn.rollback()
                 bot.send_message(chat_id, f"Error: {e}")
         elif call.data.startswith("approve_"):
             if user_id!= ADMIN_ID: return
             order_id = int(call.data.split("_")[1])
-            bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}\n\nCode ta likhe pathao, user er kache chole jabe")
+            bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}")
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
-        elif call.data == "deposit":
-            try:
-                bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
-            except: pass
-        elif call.data == "bkash":
-            try:
-                bot.edit_message_text("💳 bKash Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
-            except: pass
-        elif call.data == "nagad":
-            try:
-                bot.edit_message_text("💳 Nagad Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
-            except: pass
-        elif call.data == "rocket":
-            try:
-                bot.edit_message_text("💳 Rocket Personal\n`off ase akon`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
-            except: pass
-        elif call.data == "usdt":
-            try:
-                bot.edit_message_text(
-                    "💲 USDT Payment\n\n"
-                    "🔹 TRC20:\n`TGE8oPaj7cYP14xuoHTZT19KxwSf12FYoz`\n\n"
-                    "🔹 BEP20:\n`0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268`\n\n"
-                    "1. Address copy kore payment korun\n"
-                    "2. Payment er por 'Submit Payment' e click korun",
-                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown"
-                )
-            except: pass
-            user_state[user_id] = {"step": "amount"}
-            bot.send_message(chat_id, "💰 Enter Deposit Amount")
         elif call.data.startswith("confirm_"):
             if user_id!= ADMIN_ID: return
             parts = call.data.split("_")
-            target_user = int(parts[1])
-            amount = float(parts[2])
+            target_user = int(parts[1]); amount = float(parts[2])
             update_balance(target_user, amount)
             new_balance = get_balance(target_user)
             bonus_to = activate_referral_bonus(target_user, amount)
             if bonus_to:
-                try:
-                    bot.send_message(bonus_to, f"🎉 Refer Bonus! Tomar refer kora user {target_user} {amount:.0f} BDT deposit korse, tai tumi 0.50 BDT bonus paiso! (1 bar er jonno)")
+                try: bot.send_message(bonus_to, f"🎉 Refer Bonus! {target_user} {amount:.0f} BDT deposit korse, tai tumi 0.50 BDT paiso!")
                 except: pass
-            success_msg = f"✅ ডিপোজিট সফল!\n\n💰 যোগ হয়েছে: +{amount:.2f} টাকা\n💳 ব্যালেন্স: {new_balance:.2f} টাকা"
-            bot.send_message(target_user, success_msg)
-            bot.edit_message_text(f"✅ Confirmed. {amount} BDT added to {target_user}", chat_id=chat_id, message_id=msg_id)
+            bot.send_message(target_user, f"✅ ডিপোজিট সফল!\n\n💰 যোগ হয়েছে: +{amount:.2f} টাকা\n💳 ব্যালেন্স: {new_balance:.2f} টাকা")
+            try: bot.edit_message_text(f"✅ Confirmed. {amount} BDT added to {target_user}", chat_id=chat_id, message_id=msg_id)
+            except: pass
         elif call.data.startswith("cancel_"):
             if user_id!= ADMIN_ID: return
             target_user = int(call.data.split("_")[1])
             bot.send_message(target_user, "⚠ Payment Verification Failed")
-            bot.edit_message_text("❌ Cancelled by Admin", chat_id=chat_id, message_id=msg_id)
+            try: bot.edit_message_text("❌ Cancelled by Admin", chat_id=chat_id, message_id=msg_id)
+            except: pass
         elif call.data == "wallet":
-            bot.edit_message_text(f"👛 Wallet\n💰 Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            try: bot.edit_message_text(f"👛 Wallet\n💰 Balance: {get_balance(user_id)} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            except: pass
         elif call.data == "orders":
             orders = get_orders(user_id)
             text = "📦 My Orders\nNo orders yet" if not orders else "📦 My Orders\n"+"\n".join([f"• {x[0]} - {x[1]} BDT - {x[2]}" for x in orders])
-            bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            try: bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            except: pass
         elif call.data == "support":
-            support_text = (
-                "🛡 **SUPPORT UPDATE**\n\n"
-                "📩 কোনো সমস্যা, অর্ডার বা পেমেন্ট সংক্রান্ত বিষয় থাকলে আমাদের Support-এ যোগাযোগ করুন।\n\n"
-                "⚡ দ্রুত Response\n"
-                "🤝 Friendly Support\n"
-                "🕒 24/7 Assistance\n\n"
-                "❗ Support : @PolasChandra\n\n"
-                "❤ Proxy Store — আমরা আছি আপনার পাশে।"
-            )
-            bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu(), parse_mode="Markdown")
+            support_text = "🛡 **SUPPORT UPDATE**\n\n📩 সমস্যা হলে Support: @PolasChandra\n\n🕒 24/7 Assistance"
+            try: bot.edit_message_text(support_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu(), parse_mode="Markdown")
+            except: pass
         elif call.data == "about":
-            about_text = f"ℹ About {BOT_NAME}"
-            bot.edit_message_text(about_text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            try: bot.edit_message_text(f"ℹ About {BOT_NAME}", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            except: pass
         elif call.data == "home":
-            try:
-                bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+            try: bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
             except: pass
         elif call.data == "refer":
             count, earn = get_refer_stats(user_id)
             bot_username = bot.get_me().username
             link = f"https://t.me/{bot_username}?start={user_id}"
-            text = f"👥 **Refer & Earn**\n\n🔗 Tomar Link:\n`{link}`\n\n👤 Total Refer: {count}\n💰 Earn: {earn:.2f} BDT\n\n📢 **Note:** Tomar link e join kora user jodi minimum 10 TK deposit kore, tahole tumi 0.50 BDT paba. 1 jon user er jonno 1 bar e paba, bar bar deposit e bonus paba na."
-            bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu(), parse_mode="Markdown")
-
-        bot.answer_callback_query(call.id)
+            text = f"👥 **Refer & Earn**\n\n🔗 Tomar Link:\n`{link}`\n\n👤 Total Refer: {count}\n💰 Earn: {earn:.2f} BDT"
+            try: bot.edit_message_text(text, chat_id=chat_id, message_id=msg_id, reply_markup=main_menu(), parse_mode="Markdown")
+            except: pass
+        try: bot.answer_callback_query(call.id)
+        except: pass
 
     @bot.message_handler(func=lambda m: m.from_user.id in user_state, content_types=['text', 'document'])
     def process_all(message):
         user_id = message.from_user.id
+        if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
+            bot.send_message(message.chat.id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
+            return
         state = user_state.get(user_id)
         if not state: return
-
         if state["step"] == "wait_txt_file":
             if message.content_type == 'document' and message.document:
                 try:
@@ -306,98 +298,53 @@ def register_handlers(bot):
                         wb = openpyxl.load_workbook(io.BytesIO(downloaded_file))
                         ws = wb.active
                         for row in ws.iter_rows(values_only=True):
-                            if row and row[0]:
-                                codes.append(str(row[0]).strip())
-                    else:
-                        bot.send_message(message.chat.id, "❌ Sudhu.txt ba.xlsx file pathao")
-                        return
-                    if not codes:
-                        bot.send_message(message.chat.id, "❌ File ta faka!")
-                        return
+                            if row and row[0]: codes.append(str(row[0]).strip())
+                    else: bot.send_message(message.chat.id, "❌ Sudhu.txt ba.xlsx"); return
+                    if not codes: bot.send_message(message.chat.id, "❌ File faka!"); return
                     state["codes"] = codes
                     state["step"] = "stock_category"
-                    bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\n\nEkhon Category bolo:\n`proxy` / `morelogin`", parse_mode="Markdown")
-                except Exception as e:
-                    bot.send_message(message.chat.id, f"❌ Error: {e}")
-            else:
-                bot.send_message(message.chat.id, "❌ Age.txt /.xlsx file ta upload koro")
-
+                    bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\n\nCategory: `proxy` / `morelogin`", parse_mode="Markdown")
+                except Exception as e: bot.send_message(message.chat.id, f"❌ Error: {e}")
+            else: bot.send_message(message.chat.id, "❌ File upload koro")
         elif state["step"] == "stock_category":
             cat = message.text.lower().strip()
-            if cat not in ["proxy", "morelogin"]:
-                bot.send_message(message.chat.id, "❌ Vul category. `proxy` ba `morelogin` likho", parse_mode="Markdown")
-                return
+            if cat not in ["proxy", "morelogin"]: bot.send_message(message.chat.id, "❌ `proxy` ba `morelogin` likho", parse_mode="Markdown"); return
             state["category"] = cat
             state["step"] = "stock_product"
-            if cat == "proxy":
-                bot.send_message(message.chat.id, "Product er name ki? Likhba:\n`Owl Proxy 200MB`\n`ABC Proxy 1 GB`\n`Dataimpluse Proxy 1 GB`\n`Rapid Proxy 500 MB`", parse_mode="Markdown")
-            else:
-                bot.send_message(message.chat.id, "Product er name ki? Likhba:\n`Morelogin 100 Minutes`", parse_mode="Markdown")
-
+            bot.send_message(message.chat.id, "Product name dao")
         elif state["step"] == "stock_product":
             add_stock(state["category"], message.text.strip(), state["codes"])
-            bot.send_message(message.chat.id, f"✅ Stock Add Complete!\n\nCategory: {state['category']}\nProduct: {message.text.strip()}\nTotal: {len(state['codes'])} pcs")
+            bot.send_message(message.chat.id, f"✅ Stock Add Done!\n{state['category']} | {message.text.strip()} : {len(state['codes'])} pcs")
             del user_state[user_id]
-
         elif state["step"] == "admin_user_id":
-            state["target_id"] = int(message.text)
-            state["step"] = "admin_amount"
-            bot.send_message(message.chat.id, "💰 Koto BDT add korba?")
+            state["target_id"] = int(message.text); state["step"] = "admin_amount"; bot.send_message(message.chat.id, "💰 Koto BDT?")
         elif state["step"] == "admin_amount":
-            amount = float(message.text)
-            target_id = state["target_id"]
-            update_balance(target_id, amount)
-            bot.send_message(message.chat.id, f"✅ {target_id} ke {amount} BDT add kora hoise")
-            bot.send_message(target_id, f"🎉 Admin apnar account e {amount} BDT add korse")
-            del user_state[user_id]
+            amount = float(message.text); target_id = state["target_id"]; update_balance(target_id, amount)
+            bot.send_message(message.chat.id, f"✅ {target_id} ke {amount} BDT add"); bot.send_message(target_id, f"🎉 Admin {amount} BDT add korse"); del user_state[user_id]
         elif state["step"] == "broadcast_msg":
-            message_text = message.text
-            all_users = get_all_users()
-            sent = 0
+            all_users = get_all_users(); sent = 0
             for uid in all_users:
-                try:
-                    bot.send_message(uid, f"📢 **Notice from {BOT_NAME}**\n\n{message_text}", parse_mode="Markdown")
-                    sent += 1
+                try: bot.send_message(uid, f"📢 **Notice from {BOT_NAME}**\n\n{message.text}", parse_mode="Markdown"); sent += 1
                 except: pass
-            bot.send_message(message.chat.id, f"✅ Broadcast Done! {sent} jon ke pathano hoise")
-            del user_state[user_id]
+            bot.send_message(message.chat.id, f"✅ Broadcast Done! {sent} jon ke pathano hoise"); del user_state[user_id]
         elif state["step"] == "admin_code":
-            order_id = state["order_id"]
-            code = message.text
-            order = get_order_by_id(order_id)
-            if not order:
-                bot.send_message(message.chat.id, f"❌ Order {order_id} pawa jay nai")
-                del user_state[user_id]
-                return
-            user_to_send = order[1]
-            prod = order[2]
-            update_order_status(order_id, "Approved")
-            bot.send_message(user_to_send, f"✅ Your Order Approved!\n\n📦 Product: {prod}\n🔑 Code:\n`{code}`\n\nThanks for shopping!", parse_mode="Markdown")
-            bot.send_message(message.chat.id, f"✅ Order {order_id} Approved & Code sent to {user_to_send}")
-            del user_state[user_id]
+            order_id = state["order_id"]; code = message.text; order = get_order_by_id(order_id)
+            if not order: bot.send_message(message.chat.id, f"❌ Order {order_id} nai"); del user_state[user_id]; return
+            user_to_send = order[1]; prod = order[2]; update_order_status(order_id, "Approved")
+            bot.send_message(user_to_send, f"✅ Your Order Approved!\n\n📦 Product: {prod}\n🔑 Code:\n`{code}`", parse_mode="Markdown")
+            bot.send_message(message.chat.id, f"✅ Order {order_id} Approved & Code sent to {user_to_send}"); del user_state[user_id]
         elif state["step"] == "amount":
-            state["amount"] = message.text
-            state["step"] = "trx"
-            bot.send_message(message.chat.id, "🧾 Send Transaction ID / TrxID")
+            state["amount"] = message.text; state["step"] = "trx"; bot.send_message(message.chat.id, "🧾 Send Transaction ID / TrxID")
         elif state["step"] == "trx":
-            amount = state['amount']
-            trx = message.text
+            amount = state['amount']; trx = message.text
             markup = InlineKeyboardMarkup()
-            markup.add(
-                InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{user_id}_{amount}"),
-                InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{user_id}")
-            )
+            markup.add(InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{user_id}_{amount}"), InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{user_id}"))
             bot.send_message(ADMIN_ID,f"💰 New Deposit Request\n👤 {message.from_user.first_name}\n🆔 {user_id}\nAmount: {amount} BDT\nTRX ID: {trx}", reply_markup=markup)
-            bot.send_message(message.chat.id,"✅ Deposit Request Sent. Admin will approve in 5-10 min.")
-            del user_state[user_id]
+            bot.send_message(message.chat.id,"✅ Deposit Request Sent."); del user_state[user_id]
         elif state["step"] == "custom_qty":
             try:
                 qty = int(message.text)
                 if qty < 1: qty = 1
-                category = state["category"]
-                name = state["name"]
-                price = state["price"]
-                bot.send_message(message.chat.id, f"🛒 {name}\n💎 Price: {price} BDT\nQuantity: {qty}", reply_markup=quantity_menu(category, name, price, qty))
+                bot.send_message(message.chat.id, f"🛒 {state['name']}\nQuantity: {qty}", reply_markup=quantity_menu(state['category'], state['name'], state['price'], qty))
                 del user_state[user_id]
-            except:
-                bot.send_message(message.chat.id, "❌ Sothik number dao")
+            except: bot.send_message(message.chat.id, "❌ Sothik number dao")
