@@ -203,7 +203,7 @@ def register_handlers(bot):
             order_id = int(call.data.split("_")[1])
             bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}\n\nCode ta likhe pathao, user er kache chole jabe")
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
-               elif call.data == "deposit":
+        elif call.data == "deposit":
             try:
                 bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
             except: pass
