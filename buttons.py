@@ -38,16 +38,19 @@ def product_menu(category):
     markup = InlineKeyboardMarkup()
 
     if category == "proxy":
-        markup.add(InlineKeyboardButton("Owl Proxy 200MB 3 BDT", callback_data="select_qty|proxy|Owl Proxy 200MB|3"))
-        markup.add(InlineKeyboardButton("ABC Proxy 1 GB 290 BDT", callback_data="select_qty|proxy|ABC Proxy 1 GB|290"))
-        markup.add(InlineKeyboardButton("Dataimpluse Proxy 1 GB 150 BDT", callback_data="select_qty|proxy|Dataimpluse Proxy 1 GB|150"))
-        markup.add(InlineKeyboardButton("Rapid Proxy 500 MB 80 BDT", callback_data="select_qty|proxy|Rapid Proxy 500 MB|80"))
+        markup.add(InlineKeyboardButton("Owl Proxy 200MB 2.50 BDT", callback_data="select_qty|proxy|Owl Proxy 200MB|2.50"))
+        markup.add(InlineKeyboardButton("ABC Proxy 1 GB 250 BDT", callback_data="select_qty|proxy|ABC Proxy 1 GB|250"))
+        markup.add(InlineKeyboardButton("Dataimpluse Proxy 1 GB 140 BDT", callback_data="select_qty|proxy|Dataimpluse Proxy 1 GB|140"))
+        markup.add(InlineKeyboardButton("Rapid Proxy 1 GB 130 BDT", callback_data="select_qty|proxy|Rapid Proxy 1 GB|130"))
+        markup.add(InlineKeyboardButton("Rocket Proxy 1 GB 160 BDT", callback_data="select_qty|proxy|Rocket Proxy 1 GB|160"))
+        markup.add(InlineKeyboardButton("711 Proxy 1 GB 115 BDT", callback_data="select_qty|proxy|711 Proxy 1 GB|115"))
+        markup.add(InlineKeyboardButton("CLI proxy 1 GB 115 BDT", callback_data="select_qty|proxy|CLI Proxy 1 GB|115"))
+        markup.add(InlineKeyboardButton("MASH Proxy 1 GB 130 BDT", callback_data="select_qty|proxy|MASH Proxy 1 GB|130"))
     elif category == "morelogin":
         markup.add(InlineKeyboardButton("Morelogin 100 Minutes 30 BDT", callback_data="select_qty|morelogin|Morelogin 100 Minutes|30"))
     elif category == "vpn":
         markup.add(InlineKeyboardButton("Nord VPN 7 Days 25 BDT", callback_data="select_qty|vpn|Nord VPN 7 Days|25"))
         markup.add(InlineKeyboardButton("HMA VPN 7 Days 25 BDT", callback_data="select_qty|vpn|HMA VPN 7 Days|25"))
-        markup.add(InlineKeyboardButton("Proton VPN 14 Days 50 BDT", callback_data="select_qty|vpn|Proton VPN 14 Days|50"))
         markup.add(InlineKeyboardButton("Surfshark 7 Days 25 BDT", callback_data="select_qty|vpn|Surfshark 7 Days|25"))
         markup.add(InlineKeyboardButton("Hotspot Shield 7 Days 25 BDT", callback_data="select_qty|vpn|Hotspot Shield 7 Days|25"))
         markup.add(InlineKeyboardButton("Cyber Ghost 7 Days 25 BDT", callback_data="select_qty|vpn|Cyber Ghost 7 Days|25"))
@@ -58,6 +61,12 @@ def product_menu(category):
         markup.add(InlineKeyboardButton("Potato 7 Days 25 BDT", callback_data="select_qty|vpn|Potato 7 Days|25"))
         markup.add(InlineKeyboardButton("Sky 7 Days 25 BDT", callback_data="select_qty|vpn|Sky 7 Days|25"))
         markup.add(InlineKeyboardButton("Turbo 7 Days 25 BDT", callback_data="select_qty|vpn|Turbo 7 Days|25"))
+        markup.add(InlineKeyboardButton("HMA 1 Month 56 BDT", callback_data="select_qty|vpn|HMA 1 Month|56"))
+        markup.add(InlineKeyboardButton("Nord 1 Month 150 BDT", callback_data="select_qty|vpn|Nord 1 Month|150"))
+        markup.add(InlineKeyboardButton("Proton 1 Month 150 BDT", callback_data="select_qty|vpn|Proton 1 Month|150"))
+        markup.add(InlineKeyboardButton("Express 1 Month 75 BDT", callback_data="select_qty|vpn|Express 1 Month|75"))
+        markup.add(InlineKeyboardButton("Mysterium 1 Month 1875 BDT", callback_data="select_qty|vpn|Mysterium 1 Month|1875"))
+        markup.add(InlineKeyboardButton("MYSTERIUM DARK 1 Month 740 BDT", callback_data="select_qty|vpn|MYSTERIUM DARK 1 Month|740"))
     elif category == "gmail":
         markup.add(InlineKeyboardButton("Gmail.com 40 BDT", callback_data="select_qty|gmail|Gmail.com 40|40"))
     elif category == "outlook":
