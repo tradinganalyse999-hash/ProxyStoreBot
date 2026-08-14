@@ -38,14 +38,15 @@ def product_menu(category):
     markup = InlineKeyboardMarkup()
 
     if category == "proxy":
-        markup.add(InlineKeyboardButton("Owl Proxy 200MB 2.50 BDT", callback_data="select_qty|proxy|Owl Proxy 200MB|2.50"))
-        markup.add(InlineKeyboardButton("ABC Proxy 1 GB 250 BDT", callback_data="select_qty|proxy|ABC Proxy 1 GB|250"))
-        markup.add(InlineKeyboardButton("Dataimpluse Proxy 1 GB 140 BDT", callback_data="select_qty|proxy|Dataimpluse Proxy 1 GB|140"))
-        markup.add(InlineKeyboardButton("Rapid Proxy 1 GB 130 BDT", callback_data="select_qty|proxy|Rapid Proxy 1 GB|130"))
-        markup.add(InlineKeyboardButton("Rocket Proxy 1 GB 160 BDT", callback_data="select_qty|proxy|Rocket Proxy 1 GB|160"))
-        markup.add(InlineKeyboardButton("711 Proxy 1 GB 115 BDT", callback_data="select_qty|proxy|711 Proxy 1 GB|115"))
-        markup.add(InlineKeyboardButton("CLI proxy 1 GB 115 BDT", callback_data="select_qty|proxy|CLI Proxy 1 GB|115"))
-        markup.add(InlineKeyboardButton("MASH Proxy 1 GB 130 BDT", callback_data="select_qty|proxy|MASH Proxy 1 GB|130"))
+        markup.add(InlineKeyboardButton("Owl Proxy SUB 200MB 3 BDT", callback_data="select_qty|proxy|Owl Proxy SUB 200MB|3"))
+        markup.add(InlineKeyboardButton("ABC Proxy SUB 1 GB 250 BDT", callback_data="select_qty|proxy|ABC Proxy SUB 1 GB|250"))
+        markup.add(InlineKeyboardButton("Dataimpluse SUB Proxy 1 GB 150 BDT", callback_data="select_qty|proxy|Dataimpluse Proxy SUB 1 GB|150"))
+        markup.add(InlineKeyboardButton("Rapid Proxy SUB 1 GB 130 BDT", callback_data="select_qty|proxy|Rapid Proxy SUB 1 GB|130"))
+        markup.add(InlineKeyboardButton("Rocket Proxy SUB 1 GB 160 BDT", callback_data="select_qty|proxy|Rocket Proxy SUB 1 GB|160"))
+        markup.add(InlineKeyboardButton("711 Proxy SUB 1 GB 115 BDT", callback_data="select_qty|proxy|711 Proxy SUB 1 GB|115"))
+        markup.add(InlineKeyboardButton("CLI proxy SUB 1 GB 115 BDT", callback_data="select_qty|proxy|CLI Proxy SUB 1 GB|115"))
+        markup.add(InlineKeyboardButton("MASH Proxy SUB 1 GB 130 BDT", callback_data="select_qty|proxy|MASH Proxy SUB 1 GB|130"))
+        markup.add(InlineKeyboardButton("9 Proxy SUB 1 GB 130 BDT", callback_data="select_qty|proxy|9 Proxy SUB 1 GB|130"))
     elif category == "morelogin":
         markup.add(InlineKeyboardButton("Morelogin 100 Minutes 30 BDT", callback_data="select_qty|morelogin|Morelogin 100 Minutes|30"))
     elif category == "vpn":
