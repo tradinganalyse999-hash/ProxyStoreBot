@@ -83,8 +83,9 @@ def register_handlers(bot):
             except: pass
         elif call.data == "hotmail_list":
             try: bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
+            except: pass
         elif call.data == "edumail_list":
-            try: bot.edit_message_text("📬 edumail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("edumail"))
+            try: bot.edit_message_text("🎓 Edu Mail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("edumail"))
             except: pass
         elif call.data == "morelogin_list":
             try: bot.edit_message_text("🖥 Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("morelogin"))
@@ -158,8 +159,6 @@ def register_handlers(bot):
             else:
                 try: bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
                 except: pass
-
-        # --- DEPOSIT FIXED PART ---
         elif call.data == "deposit":
             try: bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
             except: pass
@@ -178,7 +177,6 @@ def register_handlers(bot):
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
-
         elif call.data == "admin_add_stock":
             if user_id!= ADMIN_ID: return
             bot.send_message(chat_id, "📦 File pathao\n.txt ba.xlsx")
@@ -305,18 +303,25 @@ def register_handlers(bot):
                     if not codes: bot.send_message(message.chat.id, "❌ File faka!"); return
                     state["codes"] = codes
                     state["step"] = "stock_category"
-                    bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\n\nCategory: `proxy` / `morelogin`", parse_mode="Markdown")
+                    bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\n\nCategory likho:\n`proxy` / `morelogin` / `edumail` / `hotmail` / `gmail` / `outlook` / `vpn`", parse_mode="Markdown")
                 except Exception as e: bot.send_message(message.chat.id, f"❌ Error: {e}")
             else: bot.send_message(message.chat.id, "❌ File upload koro")
         elif state["step"] == "stock_category":
             cat = message.text.lower().strip()
-            if cat not in ["proxy", "morelogin"]: bot.send_message(message.chat.id, "❌ `proxy` ba `morelogin` likho", parse_mode="Markdown"); return
+            allowed = ["proxy", "morelogin", "edumail", "hotmail", "gmail", "outlook", "vpn"]
+            if cat not in allowed:
+                bot.send_message(message.chat.id, "❌ Vul category. `proxy` / `morelogin` / `edumail` / `hotmail` / `gmail` / `outlook` / `vpn` likho", parse_mode="Markdown")
+                return
             state["category"] = cat
             state["step"] = "stock_product"
-            bot.send_message(message.chat.id, "Product name dao")
+            bot.send_message(message.chat.id, f"✅ Category: {cat}\nEkhon Product er exact name likho (Example: `Morelogin 100 Minutes` / `Edu Gmail Live 10 Minute`)")
         elif state["step"] == "stock_product":
-            add_stock(state["category"], message.text.strip(), state["codes"])
-            bot.send_message(message.chat.id, f"✅ Stock Add Done!\n{state['category']} | {message.text.strip()} : {len(state['codes'])} pcs")
+            prod_name = message.text.strip()
+            # Auto fix for common mistakes
+            if state["category"] == "morelogin" and "morelogin" in prod_name.lower():
+                prod_name = "Morelogin 100 Minutes"
+            add_stock(state["category"], prod_name, state["codes"])
+            bot.send_message(message.chat.id, f"✅ Stock Add Done!\n{state['category']} | {prod_name} : {len(state['codes'])} pcs")
             del user_state[user_id]
         elif state["step"] == "admin_user_id":
             state["target_id"] = int(message.text); state["step"] = "admin_amount"; bot.send_message(message.chat.id, "💰 Koto BDT?")
