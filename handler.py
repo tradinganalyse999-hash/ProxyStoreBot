@@ -83,6 +83,8 @@ def register_handlers(bot):
             except: pass
         elif call.data == "hotmail_list":
             try: bot.edit_message_text("📬 Hotmail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("hotmail"))
+        elif call.data == "edumail_list":
+            try: bot.edit_message_text("📬 edumail Products", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("edumail"))
             except: pass
         elif call.data == "morelogin_list":
             try: bot.edit_message_text("🖥 Morelogin 100 Minutes", chat_id=chat_id, message_id=msg_id, reply_markup=product_menu("morelogin"))
