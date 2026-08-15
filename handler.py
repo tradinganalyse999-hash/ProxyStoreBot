@@ -121,15 +121,21 @@ def register_handlers(bot):
             balance = get_balance(user_id)
             if balance >= total_price:
                 is_auto = False
-                if category == "morelogin": is_auto = True
-                elif category == "proxy" and "owl" in name.lower(): is_auto = True
+                if category == "morelogin":
+                    is_auto = True
+                elif category == "proxy" and "owl" in name.lower():
+                    is_auto = True
+                elif category in ["outlook", "edumail", "hotmail", "gmail"]:
+                    is_auto = True
+
                 if is_auto:
                     available = get_stock_count(category, name)
                     if available < qty:
                         bot.send_message(ADMIN_ID, f"⚠ Stock sesh! {name} - {qty} pcs order asche but stock {available} pcs")
-                        try: bot.edit_message_text(f"❌ Stock e nai. Admin ke janao. Stock: {available} pcs", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                        try: bot.edit_message_text(f"❌ Stock sesh! Available: {available} pcs\nAdmin ke stock add korte bolo", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                         except: pass
                         return
+
                 update_balance(user_id, -total_price)
                 if is_auto:
                     codes = take_codes(category, name, qty)
@@ -159,6 +165,7 @@ def register_handlers(bot):
             else:
                 try: bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
                 except: pass
+
         elif call.data == "deposit":
             try: bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
             except: pass
@@ -177,6 +184,7 @@ def register_handlers(bot):
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
+
         elif call.data == "admin_add_stock":
             if user_id!= ADMIN_ID: return
             bot.send_message(chat_id, "📦 File pathao\n.txt ba.xlsx")
@@ -314,10 +322,9 @@ def register_handlers(bot):
                 return
             state["category"] = cat
             state["step"] = "stock_product"
-            bot.send_message(message.chat.id, f"✅ Category: {cat}\nEkhon Product er exact name likho (Example: `Morelogin 100 Minutes` / `Edu Gmail Live 10 Minute`)")
+            bot.send_message(message.chat.id, f"✅ Category: {cat}\nEkhon Product er exact name likho (Example: `Morelogin 100 Minutes` / `Outlook.com` / `Edu Gmail Live 10 Minute`)")
         elif state["step"] == "stock_product":
             prod_name = message.text.strip()
-            # Auto fix for common mistakes
             if state["category"] == "morelogin" and "morelogin" in prod_name.lower():
                 prod_name = "Morelogin 100 Minutes"
             add_stock(state["category"], prod_name, state["codes"])
