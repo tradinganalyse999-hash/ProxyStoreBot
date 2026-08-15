@@ -5,7 +5,7 @@ import os
 def force_join_menu():
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("📢 Channel Join Koro", url=FORCE_JOIN_LINK))
-    markup.add(InlineKeyboardButton("✅ Verify", callback_data="verify_join"))
+    markup.add(InlineKeyboardButton("✅ Verify Join", callback_data="verify_join"))
     return markup
 
 def main_menu():
@@ -23,6 +23,7 @@ def shop_menu():
     markup.add(InlineKeyboardButton("📧 Gmail", callback_data="gmail_list"))
     markup.add(InlineKeyboardButton("📮 Outlook", callback_data="outlook_list"))
     markup.add(InlineKeyboardButton("📬 Hotmail", callback_data="hotmail_list"))
+    markup.add(InlineKeyboardButton("🎓 Edu Mail", callback_data="edumail_list"))
     markup.add(InlineKeyboardButton("🏠 Home", callback_data="home"))
     return markup
 
@@ -88,7 +89,11 @@ def product_menu(category):
 def quantity_menu(category, name, price, qty):
     total = float(price) * int(qty)
     markup = InlineKeyboardMarkup(row_width=3)
-    markup.add(InlineKeyboardButton("➖", callback_data=f"qty_minus|{category}|{name}|{price}|{qty}"), InlineKeyboardButton(f"{qty} pcs", callback_data="noop"), InlineKeyboardButton("➕", callback_data=f"qty_plus|{category}|{name}|{price}|{qty}"))
+    markup.add(
+        InlineKeyboardButton("➖", callback_data=f"qty_minus|{category}|{name}|{price}|{qty}"),
+        InlineKeyboardButton(f"{qty} pcs", callback_data="noop"),
+        InlineKeyboardButton("➕", callback_data=f"qty_plus|{category}|{name}|{price}|{qty}")
+    )
     markup.add(InlineKeyboardButton("✏ Custom Quantity", callback_data=f"custom_qty|{category}|{name}|{price}"))
     markup.add(InlineKeyboardButton(f"🛒 Buy - {total} BDT", callback_data=f"buy|{category}|{name}|{price}|{qty}"))
     markup.add(InlineKeyboardButton("⬅ Back", callback_data=f"{category}_list"))
