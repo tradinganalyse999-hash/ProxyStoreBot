@@ -139,23 +139,31 @@ def register_handlers(bot):
                 update_balance(user_id, -total_price)
                 if is_auto:
                     codes = take_codes(category, name, qty)
-                    import openpyxl
-                    wb = openpyxl.Workbook()
-                    ws = wb.active
-                    ws.title = "Delivery"
-                    ws.append(["Product Name", "No", "Account Details"])
-                    ws.column_dimensions['A'].width = 30
-                    ws.column_dimensions['B'].width = 10
-                    ws.column_dimensions['C'].width = 90
-                    for i, code in enumerate(codes, 1): ws.append([name, i, code])
-                    file_stream = io.BytesIO()
-                    wb.save(file_stream)
-                    file_stream.seek(0)
-                    file_stream.name = f"{name.replace(' ','_')}_{qty}pcs.xlsx"
                     add_order(user_id, f"{name} x{qty}", total_price)
-                    bot.send_document(user_id, file_stream, caption=f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nProblem hole {SUPPORT_USERNAME}")
-                    try: bot.edit_message_text(f"✅ Order Complete! File upore diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
-                    except: pass
+
+                    if qty > 5:
+                        import openpyxl
+                        wb = openpyxl.Workbook()
+                        ws = wb.active
+                        ws.title = "Delivery"
+                        ws.append(["Product Name", "No", "Account Details"])
+                        ws.column_dimensions['A'].width = 30
+                        ws.column_dimensions['B'].width = 10
+                        ws.column_dimensions['C'].width = 90
+                        for i, code in enumerate(codes, 1):
+                            ws.append([name, i, code])
+                        file_stream = io.BytesIO()
+                        wb.save(file_stream)
+                        file_stream.seek(0)
+                        file_stream.name = f"{name.replace(' ','_')}_{qty}pcs.xlsx"
+                        bot.send_document(user_id, file_stream, caption=f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nProblem hole {SUPPORT_USERNAME}")
+                        try: bot.edit_message_text(f"✅ Order Complete! File diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                        except: pass
+                    else:
+                        text_codes = "\n".join([f"{i}. `{c}`" for i, c in enumerate(codes, 1)])
+                        bot.send_message(user_id, f"✅ Order Delivered!\n\n📦 Product: {name}\n🔢 Quantity: {qty} pcs\n💰 Total: {total_price} BDT\n\n🔑 Codes:\n{text_codes}\n\nProblem hole {SUPPORT_USERNAME}", parse_mode="Markdown")
+                        try: bot.edit_message_text(f"✅ Order Complete! Code text akare diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                        except: pass
                 else:
                     oid = add_order(user_id, f"{name} x{qty}", total_price)
                     update_order_status(oid, "Pending")
@@ -184,7 +192,6 @@ def register_handlers(bot):
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
-
         elif call.data == "admin_add_stock":
             if user_id!= ADMIN_ID: return
             bot.send_message(chat_id, "📦 File pathao\n.txt ba.xlsx")
