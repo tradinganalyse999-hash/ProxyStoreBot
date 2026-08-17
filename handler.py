@@ -187,7 +187,7 @@ def register_handlers(bot):
             try: bot.edit_message_text("💳 Rocket Personal\n`off ase akon`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
             except: pass
         elif call.data == "usdt":
-            try: bot.edit_message_text("💲 USDT Payment\n\n🔹 TRC20:\n`TGE8oPaj7cYP14xuoHTZT19KxwSf12FYoz`\n\n🔹 BEP20:\n`0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268`\n\n1. Address copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            try: bot.edit_message_text("💲 USDT Payment\n\n🔹 TRC20:\n`TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz`\n\n🔹 BEP20:\n`0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268`\n\n1. Address copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
             except: pass
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
