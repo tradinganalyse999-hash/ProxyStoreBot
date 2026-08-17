@@ -6,42 +6,6 @@ from admin import admin_buttons
 from database import create_user, get_balance, update_balance, add_order, get_orders, get_order_by_id, update_order_status, c, get_all_users, get_stock_count, take_codes, add_stock, add_referral, activate_referral_bonus, get_refer_stats, get_all_stock
 from bot import bot
 import io
-import requests
-import os
-
-# ======== PAYMENTLY AUTO VERIFY CONFIG =========
-PAYMENTLY_BASE = "https://proxystore999bot.paymently.io/api"
-PAYMENTLY_API_KEY = os.getenv("PAYMENTLY_API_KEY", "o2buFfsueFLfBvKmigwVYaf7Z588ttfoUGdFMVDD")
-MY_BKASH = "01603940061"
-# ==============================================
-
-def verify_paymently(trx_id):
-    """Paymently API diye TrxID verify"""
-    try:
-        url = f"{PAYMENTLY_BASE}/verify"
-        headers = {
-            "Authorization": f"Bearer {PAYMENTLY_API_KEY}",
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        }
-        payload = {"trx_id": trx_id.strip()}
-        r = requests.post(url, headers=headers, json=payload, timeout=25)
-        print("Paymently Response:", r.text)
-        data = r.json()
-        # Success check
-        if data.get('status') == True or data.get('is_verified') == True or data.get('payment_status') == 'completed' or data.get('verified') == True:
-            # amount ber korar try
-            amount = data.get('amount') or data.get('data', {}).get('amount') or 0
-            try:
-                amount = float(amount)
-            except:
-                amount = 0
-            return True, amount, data
-        else:
-            return False, 0, data
-    except Exception as e:
-        print("Verify Error:", e)
-        return False, 0, {"error": str(e)}
 
 def is_user_joined(bot, user_id):
     try:
@@ -214,10 +178,10 @@ def register_handlers(bot):
             try: bot.edit_message_text("💰 Deposit Balance\nSelect Payment Method", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
             except: pass
         elif call.data == "bkash":
-            try: bot.edit_message_text(f"💳 bKash Personal\n`{MY_BKASH}`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            try: bot.edit_message_text("💳 bKash Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
             except: pass
         elif call.data == "nagad":
-            try: bot.edit_message_text(f"💳 Nagad Personal\n`{MY_BKASH}`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
+            try: bot.edit_message_text("💳 Nagad Personal\n`01603940061`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
             except: pass
         elif call.data == "rocket":
             try: bot.edit_message_text("💳 Rocket Personal\n`off ase akon`\n\n1. Number copy kore payment korun\n2. Payment er por 'Submit Payment' e click korun", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="Markdown")
@@ -227,7 +191,7 @@ def register_handlers(bot):
             except: pass
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
-            bot.send_message(chat_id, "💰 Enter Deposit Amount - Joto pathaben totoi likhben")
+            bot.send_message(chat_id, "💰 Enter Deposit Amount")
         elif call.data == "admin_add_stock":
             if user_id!= ADMIN_ID: return
             bot.send_message(chat_id, "📦 File pathao\n.txt ba.xlsx")
@@ -334,7 +298,6 @@ def register_handlers(bot):
             return
         state = user_state.get(user_id)
         if not state: return
-
         if state["step"] == "wait_txt_file":
             if message.content_type == 'document' and message.document:
                 try:
@@ -358,7 +321,6 @@ def register_handlers(bot):
                     bot.send_message(message.chat.id, f"✅ {len(codes)} ta code peyechi\n\nCategory likho:\n`proxy` / `morelogin` / `edumail` / `hotmail` / `gmail` / `outlook` / `vpn`", parse_mode="Markdown")
                 except Exception as e: bot.send_message(message.chat.id, f"❌ Error: {e}")
             else: bot.send_message(message.chat.id, "❌ File upload koro")
-
         elif state["step"] == "stock_category":
             cat = message.text.lower().strip()
             allowed = ["proxy", "morelogin", "edumail", "hotmail", "gmail", "outlook", "vpn"]
@@ -367,8 +329,7 @@ def register_handlers(bot):
                 return
             state["category"] = cat
             state["step"] = "stock_product"
-            bot.send_message(message.chat.id, f"✅ Category: {cat}\nEkhon Product er exact name likho")
-
+            bot.send_message(message.chat.id, f"✅ Category: {cat}\nEkhon Product er exact name likho (Example: `Morelogin 100 Minutes` / `Outlook.com` / `Edu Gmail Live 10 Minute`)")
         elif state["step"] == "stock_product":
             prod_name = message.text.strip()
             if state["category"] == "morelogin" and "morelogin" in prod_name.lower():
@@ -376,7 +337,6 @@ def register_handlers(bot):
             add_stock(state["category"], prod_name, state["codes"])
             bot.send_message(message.chat.id, f"✅ Stock Add Done!\n{state['category']} | {prod_name} : {len(state['codes'])} pcs")
             del user_state[user_id]
-
         elif state["step"] == "admin_user_id":
             state["target_id"] = int(message.text); state["step"] = "admin_amount"; bot.send_message(message.chat.id, "💰 Koto BDT?")
         elif state["step"] == "admin_amount":
@@ -394,57 +354,14 @@ def register_handlers(bot):
             user_to_send = order[1]; prod = order[2]; update_order_status(order_id, "Approved")
             bot.send_message(user_to_send, f"✅ Your Order Approved!\n\n📦 Product: {prod}\n🔑 Code:\n`{code}`", parse_mode="Markdown")
             bot.send_message(message.chat.id, f"✅ Order {order_id} Approved & Code sent to {user_to_send}"); del user_state[user_id]
-
-        # ========= AUTO DEPOSIT SYSTEM =========
         elif state["step"] == "amount":
-            try:
-                amt = float(message.text.strip())
-                if amt < 10:
-                    bot.send_message(message.chat.id, "❌ Minimum 10 BDT deposit korte hobe")
-                    return
-                state["amount"] = amt
-                state["step"] = "trx"
-                bot.send_message(message.chat.id, f"✅ Amount: {amt} BDT\n\nEkhon `{MY_BKASH}` e {amt:.0f} Tk Send Money kore TrxID ta pathao\n⚡ Auto verify hobe, admin lagbe na!", parse_mode="Markdown")
-            except:
-                bot.send_message(message.chat.id, "❌ Sothik amount likho, example: 100")
-
+            state["amount"] = message.text; state["step"] = "trx"; bot.send_message(message.chat.id, "🧾 Send Transaction ID / TrxID")
         elif state["step"] == "trx":
-            trx = message.text.strip().upper()
-            expected_amount = float(state['amount'])
-
-            bot.send_message(message.chat.id, f"⏳ `{trx}` verify kortesi...\nPaymently te check hocche...", parse_mode="Markdown")
-
-            is_valid, paid_amount, resp = verify_paymently(trx)
-
-            if is_valid:
-                # Amount check - jodi paymently amount dey tahole match korbe
-                if paid_amount > 0 and abs(paid_amount - expected_amount) > 2:
-                    bot.send_message(message.chat.id, f"⚠️ Apni {paid_amount:.0f} Tk pathiyechen kintu {expected_amount:.0f} Tk claim korsen. Admin ke janan.")
-                    # Tao admin er kache pathano
-                    markup = InlineKeyboardMarkup()
-                    markup.add(InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{user_id}_{paid_amount}"), InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{user_id}"))
-                    bot.send_message(ADMIN_ID, f"💰 Deposit Amount Mismatch\nUser: {user_id}\nClaimed: {expected_amount}\nPaid: {paid_amount}\nTRX: {trx}\n\nPaymently Response: {resp}", reply_markup=markup)
-                else:
-                    # Auto add balance
-                    update_balance(user_id, expected_amount)
-                    new_bal = get_balance(user_id)
-                    bonus_to = activate_referral_bonus(user_id, expected_amount)
-                    if bonus_to:
-                        try: bot.send_message(bonus_to, f"🎉 Refer Bonus! {user_id} {expected_amount:.0f} BDT deposit korse, tai tumi 0.50 BDT paiso!")
-                        except: pass
-
-                    bot.send_message(message.chat.id, f"✅ **Deposit Success Auto Verified!**\n\n💰 Amount: +{expected_amount:.2f} BDT\n💳 New Balance: {new_bal:.2f} BDT\n🔖 TrxID: `{trx}`\n\nEkhon Shop korte paro!", parse_mode="Markdown")
-                    bot.send_message(ADMIN_ID, f"✅ Auto Deposit Verified\nUser: {user_id}\nAmount: {expected_amount} BDT\nTRX: {trx}")
-
-                del user_state[user_id]
-            else:
-                # Fail hole admin er kache manual er jonno pathabe
-                bot.send_message(message.chat.id, f"❌ Auto Verify Fail korse.\n\nReason: {resp.get('message') or resp}\n\nAdmin manual check korbe, 5 min wait koro. TrxID vul hole abar pathao.")
-                markup = InlineKeyboardMarkup()
-                markup.add(InlineKeyboardButton("✅ Confirm Manual", callback_data=f"confirm_{user_id}_{expected_amount}"), InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{user_id}"))
-                bot.send_message(ADMIN_ID, f"⚠️ Auto Verify FAIL - Manual Check Needed\n👤 {message.from_user.first_name} ({user_id})\nAmount: {expected_amount} BDT\nTRX: {trx}\nResp: {resp}", reply_markup=markup)
-                del user_state[user_id]
-
+            amount = state['amount']; trx = message.text
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("✅ Confirm", callback_data=f"confirm_{user_id}_{amount}"), InlineKeyboardButton("❌ Cancel", callback_data=f"cancel_{user_id}"))
+            bot.send_message(ADMIN_ID,f"💰 New Deposit Request\n👤 {message.from_user.first_name}\n🆔 {user_id}\nAmount: {amount} BDT\nTRX ID: {trx}", reply_markup=markup)
+            bot.send_message(message.chat.id,"✅ Deposit Request Sent."); del user_state[user_id]
         elif state["step"] == "custom_qty":
             try:
                 qty = int(message.text)
