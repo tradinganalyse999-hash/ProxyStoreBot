@@ -219,9 +219,9 @@ def register_handlers(bot):
             try:
                 bot.edit_message_text(
                     "💲 <b>USDT Payment</b>\n\n"
-                    "🔹 <b>TRC20 (Tron):</b>\n"
+                    "🔹 <b>TRC20 (USDT):</b>\n"
                     "<code>TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz</code>\n\n"
-                    "🔹 <b>BEP20 (BSC):</b>\n"
+                    "🔹 <b>BEP20 (USDT):</b>\n"
                     "<code>0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268</code>\n\n"
                     "🔹 <b>নির্দেশনা:</b>\n"
                     "1. নেটওয়ার্ক অনুযায়ী এড্রেস কপি করুন\n"
