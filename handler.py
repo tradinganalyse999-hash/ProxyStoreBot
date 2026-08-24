@@ -175,80 +175,61 @@ def register_handlers(bot):
                 except: pass
 
         elif call.data == "deposit":
-    try:
-        bot.edit_message_text(
-            "💰 <b>ব্যালেন্স ডিপোজিট করুন</b>\n\n"
-            "আপনার পছন্দের পেমেন্ট মেথডটি নিচ থেকে সিলেক্ট করুন।",
-            chat_id=chat_id, 
-            message_id=msg_id, 
-            reply_markup=deposit_menu(),
-            parse_mode="HTML"
-        )
-    except: pass
-
-elif call.data == "bkash":
-    try:
-        bot.edit_message_text(
-            "💳 <b>bKash Personal Payment</b>\n\n"
-            "নাম্বার: <code>01603940061</code>\n\n"
-            "🔹 <b>নির্দেশনা:</b>\n"
-            "1. উপরের নাম্বারটি কপি করুন\n"
-            "2. bKash App থেকে <b>Send Money</b> করুন\n"
-            "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
-            chat_id=chat_id, 
-            message_id=msg_id, 
-            reply_markup=deposit_menu(), 
-            parse_mode="HTML"
-        )
-    except: pass
-
-elif call.data == "nagad":
-    try:
-        bot.edit_message_text(
-            "💳 <b>Nagad Personal Payment</b>\n\n"
-            "নাম্বার: <code>01603940061</code>\n\n"
-            "🔹 <b>নির্দেশনা:</b>\n"
-            "1. উপরের নাম্বারটি কপি করুন\n"
-            "2. Nagad App থেকে <b>Send Money</b> করুন\n"
-            "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
-            chat_id=chat_id, 
-            message_id=msg_id, 
-            reply_markup=deposit_menu(), 
-            parse_mode="HTML"
-        )
-    except: pass
-
-elif call.data == "rocket":
-    try:
-        bot.edit_message_text(
-            "💳 <b>Rocket Personal Payment</b>\n\n"
-            "🚫 <b>বর্তমানে বন্ধ আছে</b>\n\n"
-            "অনুগ্রহ করে bKash / Nagad / USDT এর মাধ্যমে ডিপোজিট করুন।",
-            chat_id=chat_id, 
-            message_id=msg_id, 
-            reply_markup=deposit_menu(), 
-            parse_mode="HTML"
-        )
-    except: pass
-
-elif call.data == "usdt":
-    try:
-        bot.edit_message_text(
-            "💲 <b>USDT Payment</b>\n\n"
-            "🔹 <b>TRC20 (Tron):</b>\n"
-            "<code>TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz</code>\n\n"
-            "🔹 <b>BEP20 (BSC):</b>\n"
-            "<code>0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268</code>\n\n"
-            "🔹 <b>নির্দেশনা:</b>\n"
-            "1. নেটওয়ার্ক অনুযায়ী এড্রেস কপি করুন\n"
-            "2. সঠিক নেটওয়ার্কে USDT পাঠান\n"
-            "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
-            chat_id=chat_id, 
-            message_id=msg_id, 
-            reply_markup=deposit_menu(), 
-            parse_mode="HTML"
-        )
-    except: pass
+            try:
+                bot.edit_message_text(
+                    "💰 <b>ব্যালেন্স ডিপোজিট করুন</b>\n\n"
+                    "আপনার পছন্দের পেমেন্ট মেথডটি নিচ থেকে সিলেক্ট করুন।",
+                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
+                )
+            except: pass
+        elif call.data == "bkash":
+            try:
+                bot.edit_message_text(
+                    "💳 <b>bKash Personal Payment</b>\n\n"
+                    "নাম্বার: <code>01603940061</code>\n\n"
+                    "🔹 <b>নির্দেশনা:</b>\n"
+                    "1. উপরের নাম্বারটি কপি করুন\n"
+                    "2. bKash App থেকে <b>Send Money</b> করুন\n"
+                    "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
+                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
+                )
+            except: pass
+        elif call.data == "nagad":
+            try:
+                bot.edit_message_text(
+                    "💳 <b>Nagad Personal Payment</b>\n\n"
+                    "নাম্বার: <code>01603940061</code>\n\n"
+                    "🔹 <b>নির্দেশনা:</b>\n"
+                    "1. উপরের নাম্বারটি কপি করুন\n"
+                    "2. Nagad App থেকে <b>Send Money</b> করুন\n"
+                    "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
+                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
+                )
+            except: pass
+        elif call.data == "rocket":
+            try:
+                bot.edit_message_text(
+                    "💳 <b>Rocket Personal Payment</b>\n\n"
+                    "🚫 <b>বর্তমানে বন্ধ আছে</b>\n\n"
+                    "অনুগ্রহ করে bKash / Nagad / USDT এর মাধ্যমে ডিপোজিট করুন।",
+                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
+                )
+            except: pass
+        elif call.data == "usdt":
+            try:
+                bot.edit_message_text(
+                    "💲 <b>USDT Payment</b>\n\n"
+                    "🔹 <b>TRC20 (Tron):</b>\n"
+                    "<code>TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz</code>\n\n"
+                    "🔹 <b>BEP20 (BSC):</b>\n"
+                    "<code>0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268</code>\n\n"
+                    "🔹 <b>নির্দেশনা:</b>\n"
+                    "1. নেটওয়ার্ক অনুযায়ী এড্রেস কপি করুন\n"
+                    "2. সঠিক নেটওয়ার্কে USDT পাঠান\n"
+                    "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
+                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
+                )
+            except: pass
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
