@@ -47,11 +47,16 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=["start"])
     def start(message):
-        user_id = message.from_user.id
-        if is_maintenance_block(user_id):
-            bot.reply_to(message, "🔧 **Bot Update cholche!**\n\n5-10 min por try korun. Admin kaj korche.")
-            return
+    user_id = message.from_user.id
 
+    if is_maintenance_block(user_id):
+        bot.reply_to(
+            message,
+            "🔧 **Bot Update চলছে...** ⏳\n\n"
+            "📢 Update Complete হলে **Bot/Channel-এ জানিয়ে দেওয়া হবে।**\n\n"
+            "🙏 সবাই একটু অপেক্ষা করুন। ❤️"
+        )
+        return
         args = message.text.split()
         if len(args) > 1:
             try:
