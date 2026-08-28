@@ -7,7 +7,6 @@ from database import create_user, get_balance, update_balance, add_order, get_or
 from bot import bot
 import io
 
-# ========= MAINTENANCE SYSTEM =========
 MAINTENANCE_MODE = False
 MAINT_MSG = "🔧 Bot Update চলছে... ⏳\n\n📢 Update Complete হলে Bot/Channel-এ জানিয়ে দেওয়া হবে।\n\n🙏 সবাই একটু অপেক্ষা করুন। ❤"
 
@@ -20,22 +19,45 @@ def is_user_joined(bot, user_id):
     try:
         member = bot.get_chat_member(FORCE_JOIN_CHANNEL, user_id)
         return member.status in ['member', 'administrator', 'creator']
-    except Exception as e:
-        print(f"Join check error {user_id}: {e}")
-        return False
+    except: return False
+
+def format_proxy_message(name, qty, total_price, codes, is_manual=False):
+    if is_manual:
+        full_text = f"✅ DELIVERY SUCCESSFUL!\n───────────────\n\n"
+    else:
+        full_text = f"✅ DELIVERY SUCCESSFUL!\n───────────────\n\n📦 Product: {name}\n🔢 Quantity: {qty} pcs\n💰 Total: {total_price} BDT\n\n"
+    for idx, code in enumerate(codes, 1):
+        try:
+            c_parts = code.strip().split(":")
+            if len(c_parts) >= 4:
+                host = c_parts[0]
+                port = c_parts[1]
+                user = c_parts[2]
+                pwd = ":".join(c_parts[3:])
+            else:
+                host = code
+                port = user = pwd = "N/A"
+        except:
+            host = code
+            port = user = pwd = "N/A"
+        if len(codes) > 1:
+            full_text += f"**Proxy {idx}:**\n"
+        full_text += f"IP: `{host}`\n"
+        full_text += f"🔌 Port: `{port}`\n"
+        full_text += f"👤 User: `{user}`\n"
+        full_text += f"🔑 Pass: `{pwd}`\n\n"
+    full_text += f"✅ আপনার অর্ডারটি কমপ্লিট হয়েছে!\nআমাদের উপর ভরসা রাখার জন্য ধন্যবাদ। ❤"
+    return full_text
 
 def register_handlers(bot):
-
     @bot.message_handler(commands=["maintenance"])
     def maintenance_toggle(message):
         global MAINTENANCE_MODE
-        if message.from_user.id != ADMIN_ID:
-            bot.reply_to(message, "❌ Access Denied")
-            return
+        if message.from_user.id != ADMIN_ID: return
         args = message.text.split()
         if len(args) < 2:
             status = "ON 🟢" if MAINTENANCE_MODE else "OFF 🔴"
-            bot.reply_to(message, f"🛠️ Maintenance Mode: {status}\n\nUse:\n/maintenance on - Sudu apni use korte parben\n/maintenance off - Sobai use korte parbe")
+            bot.reply_to(message, f"🛠️ Maintenance Mode: {status}\n\n/maintenance on / off")
             return
         if args[1].lower() == "on":
             MAINTENANCE_MODE = True
@@ -57,10 +79,8 @@ def register_handlers(bot):
                 if ref_id != user_id:
                     create_user(user_id, ref_id)
                     add_referral(ref_id, user_id)
-            except:
-                create_user(user_id)
-        else:
-            create_user(user_id)
+            except: create_user(user_id)
+        else: create_user(user_id)
         if user_id != ADMIN_ID and not is_user_joined(bot, user_id):
             bot.send_message(message.chat.id, f"⚠ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
             return
@@ -152,17 +172,14 @@ def register_handlers(bot):
             balance = get_balance(user_id)
             if balance >= total_price:
                 is_auto = False
-                if category == "morelogin":
-                    is_auto = True
-                elif category == "proxy" and "owl" in name.lower():
-                    is_auto = True
-                elif category in ["outlook", "edumail", "hotmail", "gmail"]:
-                    is_auto = True
+                if category == "morelogin": is_auto = True
+                elif category == "proxy" and "owl" in name.lower(): is_auto = True
+                elif category in ["outlook", "edumail", "hotmail", "gmail"]: is_auto = True
                 if is_auto:
                     available = get_stock_count(category, name)
                     if available < qty:
                         bot.send_message(ADMIN_ID, f"⚠ Stock sesh! {name} - {qty} pcs order asche but stock {available} pcs")
-                        try: bot.edit_message_text(f"❌ Stock sesh! Available: {available} pcs\nAdmin ke stock add korte bolo", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                        try: bot.edit_message_text(f"❌ Stock sesh! Available: {available} pcs", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                         except: pass
                         return
                 update_balance(user_id, -total_price)
@@ -175,76 +192,47 @@ def register_handlers(bot):
                         ws = wb.active
                         ws.title = "Delivery"
                         ws.append(["Product Name", "No", "Account Details"])
-                        ws.column_dimensions['A'].width = 30
-                        ws.column_dimensions['B'].width = 10
-                        ws.column_dimensions['C'].width = 90
-                        for i, code in enumerate(codes, 1):
-                            ws.append([name, i, code])
+                        for i, code in enumerate(codes, 1): ws.append([name, i, code])
                         file_stream = io.BytesIO()
                         wb.save(file_stream)
                         file_stream.seek(0)
                         file_stream.name = f"{name.replace(' ','_')}_{qty}pcs.xlsx"
-                        bot.send_document(user_id, file_stream, caption=f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nProblem hole {SUPPORT_USERNAME}")
+                        bot.send_document(user_id, file_stream, caption=f"✅ Order Delivered!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT")
                         try: bot.edit_message_text(f"✅ Order Complete! File diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                         except: pass
                     else:
-                        # ===== OWL PROXY COPYABLE FORMAT FOR 1-5 PCS =====
-                        is_owl = "owl" in name.lower()
-                        if is_owl:
-                            full_text = f"✅ DELIVERY SUCCESSFUL!\n───────────────\n\n📦 Product: {name}\n🔢 Quantity: {qty} pcs\n💰 Total: {total_price} BDT\n\n"
-                            for idx, code in enumerate(codes, 1):
-                                # code format: host:port:user:pass
-                                try:
-                                    c_parts = code.split(":")
-                                    if len(c_parts) >= 4:
-                                        host = c_parts[0]
-                                        port = c_parts[1]
-                                        user = c_parts[2]
-                                        pwd = ":".join(c_parts[3:]) # pass may have colon
-                                    else:
-                                        # fallback
-                                        host = code
-                                        port = user = pwd = "N/A"
-                                except:
-                                    host = code
-                                    port = user = pwd = "N/A"
-
-                                full_text += f"**Proxy {idx}:**\n"
-                                full_text += f"IP: `{host}`\n"
-                                full_text += f"🔌 Port: `{port}`\n"
-                                full_text += f"👤 User: `{user}`\n"
-                                full_text += f"🔑 Pass: `{pwd}`\n\n"
-
-                            full_text += f"✅ আপনার অর্ডারটি কমপ্লিট হয়েছে!\nআমাদের উপর ভরসা রাখার জন্য ধন্যবাদ। ❤"
-                            bot.send_message(user_id, full_text, parse_mode="Markdown")
+                        is_proxy_product = (category == "proxy")
+                        if is_proxy_product:
+                            text = format_proxy_message(name, qty, total_price, codes)
+                            bot.send_message(user_id, text, parse_mode="Markdown")
                         else:
                             text_codes = "\n".join([f"{i}. `{c}`" for i, c in enumerate(codes, 1)])
-                            bot.send_message(user_id, f"✅ Order Delivered!\n\n📦 Product: {name}\n🔢 Quantity: {qty} pcs\n💰 Total: {total_price} BDT\n\n🔑 Codes:\n{text_codes}\n\nProblem hole {SUPPORT_USERNAME}", parse_mode="Markdown")
-                        try: bot.edit_message_text(f"✅ Order Complete! Code text akare diye disi", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
+                            bot.send_message(user_id, f"✅ Order Delivered!\n\n📦 Product: {name}\n🔢 Quantity: {qty} pcs\n💰 Total: {total_price} BDT\n\n🔑 Codes:\n{text_codes}", parse_mode="Markdown")
+                        try: bot.edit_message_text(f"✅ Order Complete!", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                         except: pass
                 else:
                     oid = add_order(user_id, f"{name} x{qty}", total_price)
                     update_order_status(oid, "Pending")
                     try: bot.edit_message_text(f"✅ Order Confirmed!\n\nProduct: {name}\nQuantity: {qty} pcs\nTotal: {total_price} BDT\n\nAdmin 5-10 min er moddhe code diye dibe", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                     except: pass
-                    bot.send_message(ADMIN_ID, f"🛒 New Manual Order\nOrder ID: {oid}\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT\n\n/admin > Pending Orders")
+                    bot.send_message(ADMIN_ID, f"🛒 New Manual Order\nOrder ID: {oid}\nUser: {user_id}\nProduct: {name} x{qty}\nTotal: {total_price} BDT")
             else:
                 try: bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
                 except: pass
         elif call.data == "deposit":
-            try: bot.edit_message_text("💰 <b>ব্যালেন্স ডিপোজিট করুন</b>\n\nআপনার পছন্দের পেমেন্ট মেথডটি নিচ থেকে সিলেক্ট করুন।", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
+            try: bot.edit_message_text("💰 <b>ব্যালেন্স ডিপোজিট করুন</b>", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "bkash":
-            try: bot.edit_message_text("💳 <b>bKash Personal Payment</b>\n\nনাম্বার: <code>01603940061</code>\n\n🔹 <b>নির্দেশনা:</b>\n1. উপরের নাম্বারটি কপি করুন\n2. bKash App থেকে <b>Send Money</b> করুন\n3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
+            try: bot.edit_message_text("💳 <b>bKash Personal Payment</b>\n\nনাম্বার: <code>01603940061</code>", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "nagad":
-            try: bot.edit_message_text("💳 <b>Nagad Personal Payment</b>\n\nনাম্বার: <code>01603940061</code>\n\n🔹 <b>নির্দেশনা:</b>\n1. উপরের নাম্বারটি কপি করুন\n2. Nagad App থেকে <b>Send Money</b> করুন\n3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
+            try: bot.edit_message_text("💳 <b>Nagad Personal Payment</b>\n\nনাম্বার: <code>01603940061</code>", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "rocket":
-            try: bot.edit_message_text("💳 <b>Rocket Personal Payment</b>\n\n🚫 <b>বর্তমানে বন্ধ আছে</b>\n\nঅনুগ্রহ করে bKash / Nagad / USDT এর মাধ্যমে ডিপোজিট করুন।", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
+            try: bot.edit_message_text("💳 <b>Rocket Personal Payment</b>\n\n🚫 <b>বর্তমানে বন্ধ আছে</b>", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "usdt":
-            try: bot.edit_message_text("💲 <b>USDT Payment</b>\n\n🔹 <b>TRC20 (USDT):</b>\n<code>TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz</code>\n\n🔹 <b>BEP20 (USDT):</b>\n<code>0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268</code>\n\n🔹 <b>নির্দেশনা:</b>\n1. নেটওয়ার্ক অনুযায়ী এড্রেস কপি করুন\n2. সঠিক নেটওয়ার্কে USDT পাঠান\n3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
+            try: bot.edit_message_text("💲 <b>USDT Payment</b>\n\n🔹 <b>TRC20:</b>\n<code>TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz</code>", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
@@ -298,7 +286,7 @@ def register_handlers(bot):
         elif call.data.startswith("approve_"):
             if user_id != ADMIN_ID: return
             order_id = int(call.data.split("_")[1])
-            bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}\n\nFormat: mail:pass  or  mail|pass\nExample: test@gmail.com:123456")
+            bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}\n\nVPN: mail:pass\nProxy: host:port:user:pass")
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
         elif call.data.startswith("confirm_"):
             if user_id != ADMIN_ID: return
@@ -384,12 +372,10 @@ def register_handlers(bot):
         elif state["step"] == "stock_category":
             cat = message.text.lower().strip()
             allowed = ["proxy", "morelogin", "edumail", "hotmail", "gmail", "outlook", "vpn"]
-            if cat not in allowed:
-                bot.send_message(message.chat.id, "❌ Vul category. `proxy` / `morelogin` / `edumail` / `hotmail` / `gmail` / `outlook` / `vpn` likho", parse_mode="Markdown")
-                return
+            if cat not in allowed: return
             state["category"] = cat
             state["step"] = "stock_product"
-            bot.send_message(message.chat.id, f"✅ Category: {cat}\nEkhon Product er exact name likho (Example: `Morelogin 100 Minutes` / `Outlook.com` / `Edu Gmail Live 10 Minute`)")
+            bot.send_message(message.chat.id, f"✅ Category: {cat}\nEkhon Product er exact name likho")
         elif state["step"] == "stock_product":
             prod_name = message.text.strip()
             if state["category"] == "morelogin" and "morelogin" in prod_name.lower():
@@ -412,35 +398,42 @@ def register_handlers(bot):
             order_id = state["order_id"]
             raw_code = message.text.strip()
             order = get_order_by_id(order_id)
-            if not order:
-                bot.send_message(message.chat.id, f"❌ Order {order_id} nai")
-                del user_state[user_id]
-                return
+            if not order: del user_state[user_id]; return
             user_to_send = order[1]
             prod = order[2]
             update_order_status(order_id, "Approved")
-            mail = raw_code
-            pwd = ""
-            is_vpn_format = False
-            if ":" in raw_code:
-                parts = raw_code.split(":", 1)
-                mail = parts[0].strip()
-                pwd = parts[1].strip()
-                is_vpn_format = True
-            elif "|" in raw_code:
-                parts = raw_code.split("|", 1)
-                mail = parts[0].strip()
-                pwd = parts[1].strip()
-                is_vpn_format = True
-            is_vpn_product = "vpn" in prod.lower()
-            if is_vpn_format or is_vpn_product:
+
+            # Check if it's Proxy manual: host:port:user:pass (3 colons)
+            colon_count = raw_code.count(":")
+            is_proxy_manual = colon_count >= 3
+            is_vpn_manual = (":" in raw_code or "|" in raw_code) and "@" in raw_code.split(":")[0]
+
+            # Priority: Proxy manual first
+            if is_proxy_manual and "vpn" not in prod.lower():
+                # Single proxy code manual delivery
+                delivery_text = format_proxy_message(prod, 1, 0, [raw_code], is_manual=True)
+                bot.send_message(user_to_send, delivery_text, parse_mode="Markdown")
+            elif is_vpn_manual or "vpn" in prod.lower():
+                # VPN manual
+                mail = raw_code
+                pwd = ""
+                if ":" in raw_code:
+                    p = raw_code.split(":", 1)
+                    mail = p[0].strip()
+                    pwd = p[1].strip()
+                elif "|" in raw_code:
+                    p = raw_code.split("|", 1)
+                    mail = p[0].strip()
+                    pwd = p[1].strip()
                 if pwd:
                     delivery_text = f"✅ DELIVERY SUCCESSFUL!\n───────────────\n\n📧 Mail: `{mail}`\n🔐 Pass: `{pwd}`\n\n\n✅ আপনার অর্ডারটি কমপ্লিট হয়েছে!\nআমাদের উপর ভরসা রাখার জন্য ধন্যবাদ। ❤"
                 else:
                     delivery_text = f"✅ DELIVERY SUCCESSFUL!\n───────────────\n\n📧 Mail: `{mail}`\n\n\n✅ আপনার অর্ডারটি কমপ্লিট হয়েছে!\nআমাদের উপর ভরসা রাখার জন্য ধন্যবাদ। ❤"
                 bot.send_message(user_to_send, delivery_text, parse_mode="Markdown")
             else:
+                # Other products
                 bot.send_message(user_to_send, f"✅ Your Order Approved!\n\n📦 Product: {prod}\n🔑 Code:\n`{raw_code}`", parse_mode="Markdown")
+
             bot.send_message(message.chat.id, f"✅ Order {order_id} Approved & Code sent to {user_to_send}")
             del user_state[user_id]
         elif state["step"] == "amount":
