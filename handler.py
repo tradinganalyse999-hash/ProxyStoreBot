@@ -12,7 +12,7 @@ MAINTENANCE_MODE = False
 MAINT_MSG = "🔧 Bot Update চলছে... ⏳\n\n📢 Update Complete হলে Bot/Channel-এ জানিয়ে দেওয়া হবে।\n\n🙏 সবাই একটু অপেক্ষা করুন। ❤"
 
 def is_maintenance_block(user_id):
-    if MAINTENANCE_MODE and user_id!= ADMIN_ID:
+    if MAINTENANCE_MODE and user_id != ADMIN_ID:
         return True
     return False
 
@@ -29,7 +29,7 @@ def register_handlers(bot):
     @bot.message_handler(commands=["maintenance"])
     def maintenance_toggle(message):
         global MAINTENANCE_MODE
-        if message.from_user.id!= ADMIN_ID:
+        if message.from_user.id != ADMIN_ID:
             bot.reply_to(message, "❌ Access Denied")
             return
         args = message.text.split()
@@ -54,21 +54,21 @@ def register_handlers(bot):
         if len(args) > 1:
             try:
                 ref_id = int(args[1])
-                if ref_id!= user_id:
+                if ref_id != user_id:
                     create_user(user_id, ref_id)
                     add_referral(ref_id, user_id)
             except:
                 create_user(user_id)
         else:
             create_user(user_id)
-        if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
+        if user_id != ADMIN_ID and not is_user_joined(bot, user_id):
             bot.send_message(message.chat.id, f"⚠ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
             return
         bot.send_message(message.chat.id, f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", reply_markup=main_menu())
 
     @bot.message_handler(commands=["admin"])
     def admin(message):
-        if message.from_user.id!= ADMIN_ID:
+        if message.from_user.id != ADMIN_ID:
             bot.reply_to(message, "❌ Access Denied")
             return
         bot.send_message(message.chat.id, "👑 Admin Panel", reply_markup=admin_buttons())
@@ -94,7 +94,7 @@ def register_handlers(bot):
             else:
                 bot.answer_callback_query(call.id, "❌ Tumi ekhono Channel e Join koro nai! Age Join koro.", show_alert=True)
             return
-        if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
+        if user_id != ADMIN_ID and not is_user_joined(bot, user_id):
             try: bot.answer_callback_query(call.id, "⚠ Age Channel Join Koro!")
             except: pass
             bot.send_message(chat_id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
@@ -227,19 +227,19 @@ def register_handlers(bot):
             user_state[user_id] = {"step": "amount"}
             bot.send_message(chat_id, "💰 Enter Deposit Amount")
         elif call.data == "admin_add_stock":
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             bot.send_message(chat_id, "📦 File pathao\n.txt ba.xlsx")
             user_state[user_id] = {"step": "wait_txt_file"}
         elif call.data == "admin_broadcast":
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             bot.send_message(chat_id, "📢 Broadcast message likhe pathao.")
             user_state[user_id] = {"step": "broadcast_msg"}
         elif call.data == "admin_add_balance":
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             bot.send_message(chat_id, "👤 User er Telegram ID dao")
             user_state[user_id] = {"step": "admin_user_id"}
         elif call.data == "admin_orders":
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             try:
                 c.execute("SELECT id, user_id, product, price, status FROM orders ORDER BY id DESC LIMIT 20")
                 orders = c.fetchall()
@@ -249,7 +249,7 @@ def register_handlers(bot):
                 from database import conn; conn.rollback()
                 bot.send_message(chat_id, f"Error: {e}")
         elif call.data == "admin_stock_list":
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             stocks = get_all_stock()
             if not stocks:
                 bot.send_message(chat_id, "📦 Stock khali")
@@ -258,7 +258,7 @@ def register_handlers(bot):
             for cat, prod, count in stocks: text += f"• {cat} | {prod} : {count} pcs\n"
             bot.send_message(chat_id, text, parse_mode="Markdown")
         elif call.data == "admin_pending":
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             try:
                 c.execute("SELECT id, user_id, product, price FROM orders WHERE status='Pending' ORDER BY id DESC")
                 orders = c.fetchall()
@@ -273,12 +273,12 @@ def register_handlers(bot):
                 from database import conn; conn.rollback()
                 bot.send_message(chat_id, f"Error: {e}")
         elif call.data.startswith("approve_"):
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             order_id = int(call.data.split("_")[1])
-            bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}")
+            bot.send_message(chat_id, f"📦 Enter Product Code for Order {order_id}\n\nFormat: mail:pass  or  mail|pass\nExample: test@gmail.com:123456")
             user_state[user_id] = {"step": "admin_code", "order_id": order_id}
         elif call.data.startswith("confirm_"):
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             parts = call.data.split("_")
             target_user = int(parts[1]); amount = float(parts[2])
             update_balance(target_user, amount)
@@ -291,7 +291,7 @@ def register_handlers(bot):
             try: bot.edit_message_text(f"✅ Confirmed. {amount} BDT added to {target_user}", chat_id=chat_id, message_id=msg_id)
             except: pass
         elif call.data.startswith("cancel_"):
-            if user_id!= ADMIN_ID: return
+            if user_id != ADMIN_ID: return
             target_user = int(call.data.split("_")[1])
             bot.send_message(target_user, "⚠ Payment Verification Failed")
             try: bot.edit_message_text("❌ Cancelled by Admin", chat_id=chat_id, message_id=msg_id)
@@ -330,7 +330,7 @@ def register_handlers(bot):
         if is_maintenance_block(user_id):
             bot.reply_to(message, MAINT_MSG)
             return
-        if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
+        if user_id != ADMIN_ID and not is_user_joined(bot, user_id):
             bot.send_message(message.chat.id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
             return
         state = user_state.get(user_id)
@@ -344,7 +344,7 @@ def register_handlers(bot):
                     downloaded_file = bot.download_file(file_info.file_path)
                     if file_name.endswith(".txt"):
                         codes = downloaded_file.decode("utf-8", errors="ignore").splitlines()
-                        codes = [c.strip() for c in codes if c.strip()!= ""]
+                        codes = [c.strip() for c in codes if c.strip() != ""]
                     elif file_name.endswith(".xlsx"):
                         import openpyxl
                         wb = openpyxl.load_workbook(io.BytesIO(downloaded_file))
@@ -386,11 +386,50 @@ def register_handlers(bot):
                 except: pass
             bot.send_message(message.chat.id, f"✅ Broadcast Done! {sent} jon ke pathano hoise"); del user_state[user_id]
         elif state["step"] == "admin_code":
-            order_id = state["order_id"]; code = message.text; order = get_order_by_id(order_id)
-            if not order: bot.send_message(message.chat.id, f"❌ Order {order_id} nai"); del user_state[user_id]; return
-            user_to_send = order[1]; prod = order[2]; update_order_status(order_id, "Approved")
-            bot.send_message(user_to_send, f"✅ Your Order Approved!\n\n📦 Product: {prod}\n🔑 Code:\n`{code}`", parse_mode="Markdown")
-            bot.send_message(message.chat.id, f"✅ Order {order_id} Approved & Code sent to {user_to_send}"); del user_state[user_id]
+            order_id = state["order_id"]
+            raw_code = message.text.strip()
+            order = get_order_by_id(order_id)
+            if not order:
+                bot.send_message(message.chat.id, f"❌ Order {order_id} nai")
+                del user_state[user_id]
+                return
+            user_to_send = order[1]
+            prod = order[2]
+            update_order_status(order_id, "Approved")
+
+            # ===== VPN MANUAL COPY FORMAT =====
+            # Apni jodi mail:pass den, tahole sundor format e jabe
+            mail = raw_code
+            pwd = ""
+            is_vpn_format = False
+            if ":" in raw_code:
+                parts = raw_code.split(":", 1)
+                mail = parts[0].strip()
+                pwd = parts[1].strip()
+                is_vpn_format = True
+            elif "|" in raw_code:
+                parts = raw_code.split("|", 1)
+                mail = parts[0].strip()
+                pwd = parts[1].strip()
+                is_vpn_format = True
+
+            # Check if product name contains vpn
+            is_vpn_product = "vpn" in prod.lower()
+
+            if is_vpn_format or is_vpn_product:
+                if pwd:
+                    delivery_text = f"✅ DELIVERY SUCCESSFUL!\n───────────────\n\n📧 Mail: `{mail}`\n🔐 Pass: `{pwd}`\n\n\n✅ আপনার অর্ডারটি কমপ্লিট হয়েছে!\nআমাদের উপর ভরসা রাখার জন্য ধন্যবাদ। ❤"
+                else:
+                    # Sudu mail dile
+                    delivery_text = f"✅ DELIVERY SUCCESSFUL!\n───────────────\n\n📧 Mail: `{mail}`\n\n\n✅ আপনার অর্ডারটি কমপ্লিট হয়েছে!\nআমাদের উপর ভরসা রাখার জন্য ধন্যবাদ। ❤"
+                bot.send_message(user_to_send, delivery_text, parse_mode="Markdown")
+            else:
+                # Onno product er jonno ager moto
+                bot.send_message(user_to_send, f"✅ Your Order Approved!\n\n📦 Product: {prod}\n🔑 Code:\n`{raw_code}`", parse_mode="Markdown")
+
+            bot.send_message(message.chat.id, f"✅ Order {order_id} Approved & Code sent to {user_to_send}")
+            del user_state[user_id]
+
         elif state["step"] == "amount":
             state["amount"] = message.text; state["step"] = "trx"; bot.send_message(message.chat.id, "🧾 Send Transaction ID / TrxID")
         elif state["step"] == "trx":
