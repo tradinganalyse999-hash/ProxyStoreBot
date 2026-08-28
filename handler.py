@@ -7,6 +7,14 @@ from database import create_user, get_balance, update_balance, add_order, get_or
 from bot import bot
 import io
 
+# ========= MAINTENANCE SYSTEM - EASY ON/OFF =========
+MAINTENANCE_MODE = False # True hole sudu admin parbe
+
+def is_maintenance_block(user_id):
+    if MAINTENANCE_MODE and user_id!= ADMIN_ID:
+        return True
+    return False
+
 def is_user_joined(bot, user_id):
     try:
         member = bot.get_chat_member(FORCE_JOIN_CHANNEL, user_id)
@@ -17,9 +25,33 @@ def is_user_joined(bot, user_id):
 
 def register_handlers(bot):
 
+    @bot.message_handler(commands=["maintenance"])
+    def maintenance_toggle(message):
+        global MAINTENANCE_MODE
+        if message.from_user.id!= ADMIN_ID:
+            bot.reply_to(message, "❌ Access Denied")
+            return
+
+        args = message.text.split()
+        if len(args) < 2:
+            status = "ON 🟢" if MAINTENANCE_MODE else "OFF 🔴"
+            bot.reply_to(message, f"🛠️ Maintenance Mode: {status}\n\nUse:\n/maintenance on - Sudu apni use korte parben\n/maintenance off - Sobai use korte parbe")
+            return
+
+        if args[1].lower() == "on":
+            MAINTENANCE_MODE = True
+            bot.reply_to(message, "✅ Maintenance ON!\nEkhon sudu apni bot use korte parben, onno sobai block.")
+        elif args[1].lower() == "off":
+            MAINTENANCE_MODE = False
+            bot.reply_to(message, "✅ Maintenance OFF!\nEkhon sobai bot use korte parbe.")
+
     @bot.message_handler(commands=["start"])
     def start(message):
         user_id = message.from_user.id
+        if is_maintenance_block(user_id):
+            bot.reply_to(message, "🔧 **Bot Update cholche!**\n\n5-10 min por try korun. Admin kaj korche.")
+            return
+
         args = message.text.split()
         if len(args) > 1:
             try:
@@ -50,6 +82,12 @@ def register_handlers(bot):
         msg_id = call.message.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
+
+        if is_maintenance_block(user_id):
+            try: bot.answer_callback_query(call.id, "🔧 Bot Update cholche, pore try koren!", show_alert=True)
+            except: pass
+            return
+
         create_user(user_id)
 
         if call.data == "verify_join":
@@ -334,6 +372,9 @@ def register_handlers(bot):
     @bot.message_handler(func=lambda m: m.from_user.id in user_state, content_types=['text', 'document'])
     def process_all(message):
         user_id = message.from_user.id
+        if is_maintenance_block(user_id):
+            bot.reply_to(message, "🔧 **Bot Update cholche!**\n\nPore try korun.")
+            return
         if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
             bot.send_message(message.chat.id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
             return
