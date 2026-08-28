@@ -7,8 +7,9 @@ from database import create_user, get_balance, update_balance, add_order, get_or
 from bot import bot
 import io
 
-# ========= MAINTENANCE SYSTEM - EASY ON/OFF =========
-MAINTENANCE_MODE = False # True hole sudu admin parbe
+# ========= MAINTENANCE SYSTEM =========
+MAINTENANCE_MODE = False
+MAINT_MSG = "🔧 Bot Update চলছে... ⏳\n\n📢 Update Complete হলে Bot/Channel-এ জানিয়ে দেওয়া হবে।\n\n🙏 সবাই একটু অপেক্ষা করুন। ❤"
 
 def is_maintenance_block(user_id):
     if MAINTENANCE_MODE and user_id!= ADMIN_ID:
@@ -31,32 +32,24 @@ def register_handlers(bot):
         if message.from_user.id!= ADMIN_ID:
             bot.reply_to(message, "❌ Access Denied")
             return
-
         args = message.text.split()
         if len(args) < 2:
             status = "ON 🟢" if MAINTENANCE_MODE else "OFF 🔴"
             bot.reply_to(message, f"🛠️ Maintenance Mode: {status}\n\nUse:\n/maintenance on - Sudu apni use korte parben\n/maintenance off - Sobai use korte parbe")
             return
-
         if args[1].lower() == "on":
             MAINTENANCE_MODE = True
-            bot.reply_to(message, "✅ Maintenance ON!\nEkhon sudu apni bot use korte parben, onno sobai block.")
+            bot.reply_to(message, "✅ Maintenance ON!")
         elif args[1].lower() == "off":
             MAINTENANCE_MODE = False
-            bot.reply_to(message, "✅ Maintenance OFF!\nEkhon sobai bot use korte parbe.")
+            bot.reply_to(message, "✅ Maintenance OFF!")
 
     @bot.message_handler(commands=["start"])
     def start(message):
-    user_id = message.from_user.id
-
-    if is_maintenance_block(user_id):
-        bot.reply_to(
-            message,
-            "🔧 **Bot Update চলছে...** ⏳\n\n"
-            "📢 Update Complete হলে **Bot/Channel-এ জানিয়ে দেওয়া হবে।**\n\n"
-            "🙏 সবাই একটু অপেক্ষা করুন। ❤️"
-        )
-        return
+        user_id = message.from_user.id
+        if is_maintenance_block(user_id):
+            bot.reply_to(message, MAINT_MSG)
+            return
         args = message.text.split()
         if len(args) > 1:
             try:
@@ -68,11 +61,9 @@ def register_handlers(bot):
                 create_user(user_id)
         else:
             create_user(user_id)
-
         if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
             bot.send_message(message.chat.id, f"⚠ Bot use korte hole amader channel e join korte hobe!\n\n📢 Channel: {FORCE_JOIN_CHANNEL}\n\nJoin kore Verify koro.", reply_markup=force_join_menu())
             return
-
         bot.send_message(message.chat.id, f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", reply_markup=main_menu())
 
     @bot.message_handler(commands=["admin"])
@@ -87,14 +78,15 @@ def register_handlers(bot):
         msg_id = call.message.message_id
         chat_id = call.message.chat.id
         user_id = call.from_user.id
-
         if is_maintenance_block(user_id):
-            try: bot.answer_callback_query(call.id, "🔧 Bot Update cholche, pore try koren!", show_alert=True)
+            try:
+                bot.answer_callback_query(call.id, "🔧 Bot Update চলছে... ⏳", show_alert=True)
+            except: pass
+            try:
+                bot.send_message(chat_id, MAINT_MSG)
             except: pass
             return
-
         create_user(user_id)
-
         if call.data == "verify_join":
             if is_user_joined(bot, user_id):
                 try: bot.edit_message_text(f"🤖 {BOT_NAME}\nWelcome to ProxyStore AI", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
@@ -102,13 +94,11 @@ def register_handlers(bot):
             else:
                 bot.answer_callback_query(call.id, "❌ Tumi ekhono Channel e Join koro nai! Age Join koro.", show_alert=True)
             return
-
         if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
             try: bot.answer_callback_query(call.id, "⚠ Age Channel Join Koro!")
             except: pass
             bot.send_message(chat_id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
             return
-
         if call.data == "shop":
             try: bot.edit_message_text("🛒 Select Category", chat_id=chat_id, message_id=msg_id, reply_markup=shop_menu())
             except: pass
@@ -170,7 +160,6 @@ def register_handlers(bot):
                     is_auto = True
                 elif category in ["outlook", "edumail", "hotmail", "gmail"]:
                     is_auto = True
-
                 if is_auto:
                     available = get_stock_count(category, name)
                     if available < qty:
@@ -178,12 +167,10 @@ def register_handlers(bot):
                         try: bot.edit_message_text(f"❌ Stock sesh! Available: {available} pcs\nAdmin ke stock add korte bolo", chat_id=chat_id, message_id=msg_id, reply_markup=main_menu())
                         except: pass
                         return
-
                 update_balance(user_id, -total_price)
                 if is_auto:
                     codes = take_codes(category, name, qty)
                     add_order(user_id, f"{name} x{qty}", total_price)
-
                     if qty > 5:
                         import openpyxl
                         wb = openpyxl.Workbook()
@@ -216,62 +203,25 @@ def register_handlers(bot):
             else:
                 try: bot.edit_message_text(f"❌ Not Enough Balance\nYour Balance: {balance} BDT\nRequired: {total_price} BDT", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu())
                 except: pass
-
         elif call.data == "deposit":
             try:
-                bot.edit_message_text(
-                    "💰 <b>ব্যালেন্স ডিপোজিট করুন</b>\n\n"
-                    "আপনার পছন্দের পেমেন্ট মেথডটি নিচ থেকে সিলেক্ট করুন।",
-                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
-                )
+                bot.edit_message_text("💰 <b>ব্যালেন্স ডিপোজিট করুন</b>\n\nআপনার পছন্দের পেমেন্ট মেথডটি নিচ থেকে সিলেক্ট করুন।", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "bkash":
             try:
-                bot.edit_message_text(
-                    "💳 <b>bKash Personal Payment</b>\n\n"
-                    "নাম্বার: <code>01603940061</code>\n\n"
-                    "🔹 <b>নির্দেশনা:</b>\n"
-                    "1. উপরের নাম্বারটি কপি করুন\n"
-                    "2. bKash App থেকে <b>Send Money</b> করুন\n"
-                    "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
-                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
-                )
+                bot.edit_message_text("💳 <b>bKash Personal Payment</b>\n\nনাম্বার: <code>01603940061</code>\n\n🔹 <b>নির্দেশনা:</b>\n1. উপরের নাম্বারটি কপি করুন\n2. bKash App থেকে <b>Send Money</b> করুন\n3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "nagad":
             try:
-                bot.edit_message_text(
-                    "💳 <b>Nagad Personal Payment</b>\n\n"
-                    "নাম্বার: <code>01603940061</code>\n\n"
-                    "🔹 <b>নির্দেশনা:</b>\n"
-                    "1. উপরের নাম্বারটি কপি করুন\n"
-                    "2. Nagad App থেকে <b>Send Money</b> করুন\n"
-                    "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
-                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
-                )
+                bot.edit_message_text("💳 <b>Nagad Personal Payment</b>\n\nনাম্বার: <code>01603940061</code>\n\n🔹 <b>নির্দেশনা:</b>\n1. উপরের নাম্বারটি কপি করুন\n2. Nagad App থেকে <b>Send Money</b> করুন\n3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "rocket":
             try:
-                bot.edit_message_text(
-                    "💳 <b>Rocket Personal Payment</b>\n\n"
-                    "🚫 <b>বর্তমানে বন্ধ আছে</b>\n\n"
-                    "অনুগ্রহ করে bKash / Nagad / USDT এর মাধ্যমে ডিপোজিট করুন।",
-                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
-                )
+                bot.edit_message_text("💳 <b>Rocket Personal Payment</b>\n\n🚫 <b>বর্তমানে বন্ধ আছে</b>\n\nঅনুগ্রহ করে bKash / Nagad / USDT এর মাধ্যমে ডিপোজিট করুন।", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "usdt":
             try:
-                bot.edit_message_text(
-                    "💲 <b>USDT Payment</b>\n\n"
-                    "🔹 <b>TRC20 (USDT):</b>\n"
-                    "<code>TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz</code>\n\n"
-                    "🔹 <b>BEP20 (USDT):</b>\n"
-                    "<code>0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268</code>\n\n"
-                    "🔹 <b>নির্দেশনা:</b>\n"
-                    "1. নেটওয়ার্ক অনুযায়ী এড্রেস কপি করুন\n"
-                    "2. সঠিক নেটওয়ার্কে USDT পাঠান\n"
-                    "3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন",
-                    chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML"
-                )
+                bot.edit_message_text("💲 <b>USDT Payment</b>\n\n🔹 <b>TRC20 (USDT):</b>\n<code>TVRvRX3BZ9mrzQJgjTCryiyVChWmGZ9oJz</code>\n\n🔹 <b>BEP20 (USDT):</b>\n<code>0x0Bc20843c4452C6fAcAf7E1b757a00c0F79D6268</code>\n\n🔹 <b>নির্দেশনা:</b>\n1. নেটওয়ার্ক অনুযায়ী এড্রেস কপি করুন\n2. সঠিক নেটওয়ার্কে USDT পাঠান\n3. পেমেন্ট সম্পন্ন হলে <b>Submit Payment</b> বাটনে ক্লিক করুন", chat_id=chat_id, message_id=msg_id, reply_markup=deposit_menu(), parse_mode="HTML")
             except: pass
         elif call.data == "submit_payment":
             user_state[user_id] = {"step": "amount"}
@@ -378,7 +328,7 @@ def register_handlers(bot):
     def process_all(message):
         user_id = message.from_user.id
         if is_maintenance_block(user_id):
-            bot.reply_to(message, "🔧 **Bot Update cholche!**\n\nPore try korun.")
+            bot.reply_to(message, MAINT_MSG)
             return
         if user_id!= ADMIN_ID and not is_user_joined(bot, user_id):
             bot.send_message(message.chat.id, f"⚠ Age Channel Join Koro!\n{FORCE_JOIN_CHANNEL}", reply_markup=force_join_menu())
