@@ -72,10 +72,10 @@ def product_menu(category):
     elif category == "gmail":
         markup.add(InlineKeyboardButton("Gmail.com 40 BDT", callback_data="select_qty|gmail|Gmail.com 40|40"))
     elif category == "outlook":
-        markup.add(InlineKeyboardButton("Outlook.com 0.80 BDT", callback_data="select_qty|outlook|Outlook.com|0.80"))
-        markup.add(InlineKeyboardButton("Outlook.fr 0.80 BDT", callback_data="select_qty|outlook|Outlook.fr|0.80"))
+        markup.add(InlineKeyboardButton("Outlook.com 1 BDT", callback_data="select_qty|outlook|Outlook.com|1"))
+        markup.add(InlineKeyboardButton("Outlook.fr 1 BDT", callback_data="select_qty|outlook|Outlook.fr|1"))
     elif category == "hotmail":
-        markup.add(InlineKeyboardButton("Hotmail Fresh 0.80 BDT", callback_data="select_qty|hotmail|Hotmail Fresh|0.80"))
+        markup.add(InlineKeyboardButton("Hotmail Fresh 1 BDT", callback_data="select_qty|hotmail|Hotmail Fresh|1"))
     elif category == "edumail":
         markup.add(InlineKeyboardButton("Edu Gmail Live 10 Minute 0.30 BDT", callback_data="select_qty|edumail|Edu Gmail Live 10 Minute|0.30"))
         markup.add(InlineKeyboardButton("Edu Live 12 hour Vietnam name 0.70 BDT", callback_data="select_qty|edumail|Edu Live 12 hour Vietnam name|0.70"))
