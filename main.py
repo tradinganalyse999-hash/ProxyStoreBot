@@ -19,26 +19,27 @@ def backup_command(message):
         # Excel backup
         excel_file = create_backup_excel()
         if excel_file:
-            bot.send_document(ADMIN_ID, excel_file, caption=f"📦 **FULL BACKUP**\n\n✅ Users + Balance\n✅ Orders\n✅ Stock Available + Used\n✅ Referrals\n\nTime: {excel_file.name}\n\nEi file diye onno Railway te restore korte parben.", parse_mode="Markdown")
+            bot.send_document(ADMIN_ID, excel_file, caption=f"FULL BACKUP\n\nUsers + Balance, Orders, Stock Available + Used, Referrals\nTime: {excel_file.name}\n\nEi file diye onno Railway te restore korte parben.")
         
         # SQLite file if exists
         db_file = get_db_file_if_sqlite()
         if db_file:
             with open(db_file, 'rb') as f:
-                bot.send_document(ADMIN_ID, f, caption="💾 SQLite DB file (proxystore.db)")
+                bot.send_document(ADMIN_ID, f, caption="SQLite DB file proxystore.db")
         
-        bot.send_message(ADMIN_ID, "✅ Backup Done! File gulo save kore rakhen.")
+        bot.send_message(ADMIN_ID, "Backup Done! File gulo save kore rakhen.")
     except Exception as e:
-        bot.send_message(ADMIN_ID, f"❌ Backup error: {e}")
+        bot.send_message(ADMIN_ID, f"Backup error: {e}")
+        print(f"Backup error: {e}")
 
 def auto_backup_loop():
     while True:
         try:
             time.sleep(12 * 60 * 60)  # 12 hours
-            print("🔄 Auto backup running...")
+            print("Auto backup running...")
             excel_file = create_backup_excel()
             if excel_file:
-                bot.send_document(ADMIN_ID, excel_file, caption=f"🔄 **AUTO BACKUP (12h)**\n\n{excel_file.name}\n\nAuto save kore rakhen, credit ses hole kaj e lagbe.", parse_mode="Markdown")
+                bot.send_document(ADMIN_ID, excel_file, caption=f"AUTO BACKUP 12h - {excel_file.name} - Auto save kore rakhen")
         except Exception as e:
             print(f"Auto backup error: {e}")
             time.sleep(60)
